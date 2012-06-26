@@ -16,6 +16,7 @@ module OmniAuth
 
       uid do
         request.params['encodedId']
+        puts request.params.to_s
       end
 
       info do
