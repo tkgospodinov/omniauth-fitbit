@@ -15,8 +15,8 @@ module OmniAuth
       }
 
       uid do
-        puts ">>>>>>>>>>>>>>>>>>>>>>>>> PARAMS: #{request.params['encoded_user_id']}"
-        request.params['encoded_user_id']
+        puts ">>>>>>>>>>>>>>>>>>>>>>>>> PARAMS: #{access_token.params['encoded_user_id']}"
+        access_token.params['encoded_user_id']
       end
 
       info do
