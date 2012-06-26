@@ -15,14 +15,13 @@ module OmniAuth
       }
 
       uid do
-        request.params['oauth_token']
-        puts ">>>>>>>>>>>>>>>>>>>>>>>>>>> REQUEST PARAMS: #{request.params.to_s}"
-        puts ">>>>>>>>>>>>>>>>>>>>>>>>>>> ACCESS TOKEN: #{access_token.to_s}"
+        puts ">>>>>>>>>>>>>>>>>>>>>>>>> PARAMS: #{request.params['encoded_user_id']}"
+        request.params['encoded_user_id']
       end
 
       info do
         {
-            :display_name => raw_info #['user']['displayName']
+            :display_name => raw_info['user']['displayName']
         }
       end
 
