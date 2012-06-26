@@ -10,8 +10,8 @@ module OmniAuth
       option :client_options, {
           :site => 'http://api.fitbit.com',
           :request_token_path => '/oauth/request_token',
-          :access_token_path => '/oauth/authorize',
-          :authorize_path => '/oauth/oauth_allow'
+          :access_token_path => '/oauth/access_token',
+          :authorize_path => '/oauth/authorize'
       }
 
       uid do
