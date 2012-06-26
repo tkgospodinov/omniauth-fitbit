@@ -32,7 +32,7 @@ module OmniAuth
 
       def raw_info
         #@raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
-        @raw_info ||= access_token.get("http://api.fitbit.com/1/user/-/profile.json").body
+        @raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
       end
     end
   end
