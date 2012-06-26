@@ -11,11 +11,9 @@ Gem::Specification.new do |s|
   s.summary     = %q{OmniAuth strategy for Fitbit}
   s.description = %q{OmniAuth strategy for Fitbit}
 
-  s.rubyforge_project = "omniauth-fitbit"
-
   s.files         = `git ls-files`.split($\)
-  s.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  s.test_files    = gem.files.grep(%r{^(test|spec|features)/})
+  s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
 
   s.add_runtime_dependency 'omniauth-oauth', '~> 1.0'
