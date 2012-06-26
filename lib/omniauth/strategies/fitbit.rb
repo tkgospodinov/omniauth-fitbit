@@ -16,7 +16,7 @@ module OmniAuth
 
       uid do
         request.params['oauth_token']
-        puts ">>>>>>>>>>>>>>>>>>>>>>>>>>> #{access_token.params.to_s}"
+        puts ">>>>>>>>>>>>>>>>>>>>>>>>>>> REQUEST PARAMS: #{request.params.to_s}"
       end
 
       info do
@@ -34,6 +34,7 @@ module OmniAuth
       def raw_info
         #@raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
         @raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
+        puts ">>>>>>>>>>>>>>>>>>>>>>>>>>> RAW INFO: #{raw_info.to_s}"
       end
     end
   end
