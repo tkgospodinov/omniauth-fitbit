@@ -16,6 +16,7 @@ module OmniAuth
 
       uid do
         request.params['oauth_token']
+        puts ">>>>>>>>>>>>>>>>>>>>>>>>>>> #{access_token.params.to_s}"
       end
 
       info do
