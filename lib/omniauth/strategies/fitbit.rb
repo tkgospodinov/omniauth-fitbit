@@ -20,8 +20,8 @@ module OmniAuth
       end
 
       info do
+        puts "DISPLAY NAME >>>>>>>>>>>>>>>>>>>> #{raw_info["user"]["fullName"]}"
         {
-            puts "DISPLAY NAME >>>>>>>>>>>>>>>>>>>> #{raw_info["user"]["fullName"]}"
             :display_name => raw_info["user"]["fullName"]
         }
       end
