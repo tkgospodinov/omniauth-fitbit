@@ -21,20 +21,21 @@ module OmniAuth
 
       info do
         {
-            :display_name => raw_info['user']['displayName']
+            puts "DISPLAY NAME >>>>>>>>>>>>>>>>>>>> #{raw_info["user"]["fullName"]}"
+            :display_name => raw_info["user"]["fullName"]
         }
       end
 
       extra do
         { 
-            :raw_info => raw_info 
+            :raw_info => raw_info
         }
       end
 
       def raw_info
         #@raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
-        @raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
         puts ">>>>>>>>>>>>>>>>>>>>>>>>>>> RAW INFO: #{@raw_info.to_s}"
+        @raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
       end
     end
   end
