@@ -1,8 +1,9 @@
 require 'omniauth'
+require 'omniauth/strategies/oauth'
 
 module OmniAuth
   module Strategies
-    class Fitbit < OAuth
+    class Fitbit < OmniAuth::Strategies::OAuth
 
       option :name, "fitbit"
 
