@@ -15,7 +15,7 @@ module OmniAuth
       }
 
       uid do
-        request.params['encoded_user_id']
+        request.params['encodedId']
       end
 
       info do
@@ -32,7 +32,7 @@ module OmniAuth
 
       def raw_info
         #@raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
-        @raw_info ||= access_token.get("http://api.fitbit.com/1/user/" + request.params['encoded_user_id'] + "/profile.json").body
+        @raw_info ||= access_token.get("http://api.fitbit.com/1/user/" + request.params['encodedId'] + "/profile.json").body
       end
     end
   end
