@@ -2,7 +2,7 @@ require 'omniauth'
 
 module OmniAuth
   module Strategies
-    class Fitbit < OmniAuth::Strategies::OAuth
+    class Fitbit < OAuth
 
       option :name, "fitbit"
 
