@@ -20,7 +20,18 @@ module OmniAuth
 
       info do
         {
-            :display_name => raw_info["user"]["fullName"]
+            :full_name    => raw_info["user"]["fullName"],
+            :display_name => raw_info["user"]["displayName"],
+            :nickname     => raw_info["user"]["nickname"],
+            :gender       => raw_info["user"]["gender"],
+            :about_me       => raw_info["user"]["aboutMe"],
+            :city       => raw_info["user"]["city"],
+            :state       => raw_info["user"]["state"],
+            :country       => raw_info["user"]["country"],
+            :dob          => Date.strptime(raw_info["user"]["dateOfBirth"], '%Y-%m-%d'),
+            :member_since => Date.strptime(raw_info["user"]["memberSince"], '%Y-%m-%d'),
+            :locale       => raw_info["user"]["locale"],
+            :timezone     => raw_info["user"]["timezone"]
         }
       end
 
@@ -31,7 +42,7 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= MultiJson.load(access_token.get("http://api.fitbit.com/1/user/-/profile.json").body)
+        @raw_info ||= MultiJson.load(access_token.get('http://api.fitbit.com/1/user/-/profile.json').body)
       end
     end
   end
