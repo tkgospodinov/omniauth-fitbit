@@ -1,0 +1,6 @@
+source :rubygems
+
+gem 'sinatra'
+gem 'multi_json'
+gem 'multi_xml'
+gem 'omniauth-fitbit', :path => '../'
