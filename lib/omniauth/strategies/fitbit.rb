@@ -5,7 +5,7 @@ module OmniAuth
   module Strategies
     class Fitbit < OmniAuth::Strategies::OAuth
 
-      option :name, 'fitbit'
+      option :name, "fitbit"
 
       option :client_options, {
           :site               => 'http://api.fitbit.com',
