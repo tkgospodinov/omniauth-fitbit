@@ -3,7 +3,7 @@ require 'omniauth-fitbit'
 
 use Rack::Session::Cookie
 use OmniAuth::Builder do
-  provider :fitbit, 'e2c9d799ffb94b80bce191192fb4500c', '2b38edfa10d446afad5c513e2bc7cff8'
+  provider :fitbit, '<consumer_key>', '<consumer_secret>'
 end
 
 get '/' do
