@@ -1,6 +1,6 @@
 # OmniAuth ConstantContact
 
-This gem is an OmniAuth 1.0+ Strategy for the [Fitbit API](http://api.fitbit.com/oauth)
+This gem is an OmniAuth 1.0+ Strategy for the [Fitbit API](https://wiki.fitbit.com/display/API/OAuth+Authentication+in+the+Fitbit+API).
 
 ## Usage
 

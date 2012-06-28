@@ -5,13 +5,13 @@ module OmniAuth
   module Strategies
     class Fitbit < OmniAuth::Strategies::OAuth
 
-      option :name, "fitbit"
+      option :name, 'fitbit'
 
       option :client_options, {
-          :site => 'http://api.fitbit.com',
+          :site               => 'http://api.fitbit.com',
           :request_token_path => '/oauth/request_token',
-          :access_token_path => '/oauth/access_token',
-          :authorize_path => '/oauth/authorize'
+          :access_token_path  => '/oauth/access_token',
+          :authorize_path     => '/oauth/authorize'
       }
 
       uid do
@@ -20,18 +20,18 @@ module OmniAuth
 
       info do
         {
-            :full_name    => raw_info["user"]["fullName"],
-            :display_name => raw_info["user"]["displayName"],
-            :nickname     => raw_info["user"]["nickname"],
-            :gender       => raw_info["user"]["gender"],
-            :about_me       => raw_info["user"]["aboutMe"],
-            :city       => raw_info["user"]["city"],
-            :state       => raw_info["user"]["state"],
-            :country       => raw_info["user"]["country"],
-            :dob          => Date.strptime(raw_info["user"]["dateOfBirth"], '%Y-%m-%d'),
-            :member_since => Date.strptime(raw_info["user"]["memberSince"], '%Y-%m-%d'),
-            :locale       => raw_info["user"]["locale"],
-            :timezone     => raw_info["user"]["timezone"]
+            :full_name    => raw_info['user']['fullName'],
+            :display_name => raw_info['user']['displayName'],
+            :nickname     => raw_info['user']['nickname'],
+            :gender       => raw_info['user']['gender'],
+            :about_me     => raw_info['user']['aboutMe'],
+            :city         => raw_info['user']['city'],
+            :state        => raw_info['user']['state'],
+            :country      => raw_info['user']['country'],
+            :dob          => Date.strptime(raw_info['user']['dateOfBirth'], '%Y-%m-%d'),
+            :member_since => Date.strptime(raw_info['user']['memberSince'], '%Y-%m-%d'),
+            :locale       => raw_info['user']['locale'],
+            :timezone     => raw_info['user']['timezone']
         }
       end
 
