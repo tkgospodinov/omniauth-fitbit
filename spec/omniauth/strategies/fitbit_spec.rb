@@ -90,4 +90,21 @@ describe "OmniAuth::Strategies::Fitbit" do
       subject.info[:country].should eq("US")
     end
   end
+
+  context 'dateOfBirth is empty' do
+    before :each do
+      subject.stub(:raw_info) {
+        {
+          "user" =>
+          {
+            "dateOfBirth" => "",
+            "memberSince" => "2010-01-01",
+          }
+        }
+      }
+    end
+    it 'when return nil' do
+      subject.info[:dob].should be_nil
+    end
+  end
 end
