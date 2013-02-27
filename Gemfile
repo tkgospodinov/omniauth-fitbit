@@ -11,4 +11,5 @@ group :development, :test do
   gem 'multi_json'
   gem 'nokogiri'
   gem 'multi_xml'
+  gem 'rack-test'
 end
