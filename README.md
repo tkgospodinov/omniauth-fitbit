@@ -22,7 +22,7 @@ In Rails, create a new file under config/initializers called omniauth.rb to plug
 
 ```ruby
 Rails.application.config.middleware.use OmniAuth::Builder do
-  provider :constantcontact, 'consumer_key', 'consumer_secret'
+  provider :fitbit, 'consumer_key', 'consumer_secret'
 end
 ```
 
