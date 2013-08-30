@@ -8,6 +8,8 @@ describe Fitbit::Api do
   before(:all) do
     @consumer_key = 'user_consumer_key'
     @consumer_secret = 'user_consumer_secret'
+    @auth_token = 'user_token'
+    @auth_secret = 'user_secret'
     @api_version = 1
   end
 
@@ -38,7 +40,7 @@ describe Fitbit::Api do
     it 'should create API-Accept-Invite OAuth request' do
       api_accept_invite_url = subject.build_url(@api_version, @params)
       stub_request(:post, "api.fitbit.com#{api_accept_invite_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
 
@@ -66,8 +68,17 @@ describe Fitbit::Api do
     it 'should create API-Add-Favorite-Activity OAuth request' do
       api_add_favorite_activity_url = subject.build_url(@api_version, @params)
       stub_request(:post, "api.fitbit.com#{api_add_favorite_activity_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
+    end
+  end
+
+  context 'API-Add-Favorite-Food method' do
+    before(:each) do
+      @params = {
+        'api-method'      => 'API-Add-Favorite-Food',
+        'food-id'         => '12345'
+      }
     end
   end
 
