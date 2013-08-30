@@ -13,16 +13,14 @@ module Fitbit
     def build_url api_version, params
       api_method = get_api_method(params['api-method'])
       api_format = params['response-format']
+      api_from_user_id = "/#{params['from-user-id']}" if params['from-user-id']
+      api_from_user_id ||= ""
       api_query = uri_encode_query(params['query']) if params['query']
       api_query ||= ""
-      request_url = "/#{api_version}/#{api_method}.#{api_format}#{api_query}"
+      request_url = "/#{api_version}/#{api_method}#{api_from_user_id}.#{api_format}#{api_query}"
     end
 
     private 
-
-    def get_lowercase params
-      Hash[params.map { |k,v| [k.downcase, v.downcase] }]
-    end
 
     def valid_params params
       lowercase = get_lowercase(params)
@@ -38,6 +36,10 @@ module Fitbit
         return ["#{api_method} requires #{required}. You're missing #{required - lowercase.keys}."]
       end
       lowercase
+    end
+
+    def get_lowercase params
+      Hash[params.map { |k,v| [k.downcase, v.downcase] }]
     end
 
     def get_api_method method
@@ -66,6 +68,11 @@ module Fitbit
         'http_method' => 'get', 
         'resources'   => ['foods', 'search'],
         'required'    => ['query']
+      },
+      'api-accept-invite' => {
+        'http_method' => 'post',
+        'resources'   => ['user', '-', 'friends', 'invitations'],
+        'required'    => ['accept']
       }
     }
 
