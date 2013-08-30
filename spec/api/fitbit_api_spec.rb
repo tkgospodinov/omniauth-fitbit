@@ -107,7 +107,24 @@ describe Fitbit::Api do
       error_message = "api-add-favorite-food requires user auth_token and auth_secret."
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
+  end
+  
+  context 'API-Browse-Activites method' do
+    before(:each) do
+      @params = { 'api-method' => 'API-Browse-Activites' }
+    end
 
+    it 'should create API-Browse-Activites url' do
+      api_browse_activites_url = '/1/activities.xml'
+      expect(subject.build_url(@api_version, @params)).to eq(api_browse_activites_url)
+    end
+
+    it 'should create API-Browse-Activites OAuth request' do
+      api_browse_activites_url = subject.build_url(@api_version, @params)
+      stub_request(:get, "api.fitbit.com#{api_browse_activites_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
   end
 
   context 'API-Search-Foods method' do

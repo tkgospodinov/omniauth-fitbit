@@ -5,21 +5,24 @@ module Fitbit
       api_params = valid_params(params, auth_token, auth_secret)
       return api_params[0] if api_params.is_a? Array
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
-      request_url = build_url(@@api_version, api_params)
-      request_http_method = get_http_method(api_params['api-method'])
-      access_token.request( request_http_method,  "http://api.fitbit.com#{request_url}" )
+      send_api_request(api_params, access_token)
     end
 
     def build_url api_version, params
       api_url_resources = get_url_resources(params['api-method'])
       api_format = get_response_format(params['response-format'])
       api_required = add_api_ids(api_url_resources, params)
-      api_query = uri_encode_query(params['query']) unless params['query'].nil?
-      api_query ||= ""
+      api_query = uri_encode_query(params['query']) 
       request_url = "/#{api_version}/#{api_required}.#{api_format}#{api_query}"
     end
 
     private 
+
+    def send_api_request api_params, access_token
+      request_url = build_url(@@api_version, api_params)
+      request_http_method = get_http_method(api_params['api-method'])
+      access_token.request( request_http_method,  "http://api.fitbit.com#{request_url}" )
+    end
 
     def add_api_ids api_method, params
       ids = ['from-user-id', 'activity-id', 'food-id']
@@ -61,8 +64,12 @@ module Fitbit
     end
 
     def uri_encode_query query
-      api_query = OAuth::Helper.normalize({ 'query' => query })
-      "?#{api_query}"
+      if query.nil?
+        ""
+      else
+        api_query = OAuth::Helper.normalize({ 'query' => query }) 
+        "?#{api_query}"
+      end
     end
 
     def build_request consumer_key, consumer_secret, auth_token, auth_secret
@@ -98,6 +105,11 @@ module Fitbit
         'http_method'   => 'post',
         'resources'     => ['user', '-', 'foods', 'log', 'favorite'],
         'auth_required' => true
+      },
+      'api-browse-activites' => {
+        'http_method'   => 'get',
+        'resources'     => ['activities'],
+        'auth_required' => false
       }
     }
 
