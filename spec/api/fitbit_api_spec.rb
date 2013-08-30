@@ -50,6 +50,11 @@ describe Fitbit::Api do
       error_message = "api-accept-invite requires #{required}. You're missing #{required - @params.keys}."
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "api-accept-invite requires user auth_token and auth_secret."
+      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+    end
   end
 
   context 'API-Add-Favorite-Activity method' do
@@ -71,6 +76,11 @@ describe Fitbit::Api do
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "api-add-favorite-activity requires user auth_token and auth_secret."
+      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+    end
   end
 
   context 'API-Add-Favorite-Food method' do
@@ -80,6 +90,24 @@ describe Fitbit::Api do
         'food-id'         => '12345'
       }
     end
+
+    it 'should create API-Add-Favorite-Food url' do
+      api_add_favorite_food_url = '/1/user/-/foods/log/favorite/12345.xml'
+      expect(subject.build_url(@api_version, @params)).to eq(api_add_favorite_food_url)
+    end
+
+    it 'should create API-Add-Favorite-Food OAuth request' do
+      api_add_favorite_food_url = subject.build_url(@api_version, @params)
+      stub_request(:post, "api.fitbit.com#{api_add_favorite_food_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "api-add-favorite-food requires user auth_token and auth_secret."
+      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+    end
+
   end
 
   context 'API-Search-Foods method' do
