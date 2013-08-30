@@ -28,7 +28,7 @@ describe Fitbit::Api do
       @params = {
         'api-method' => 'API-Accept-Invite',
         'from-user-id' => 'r2d2c3p0',
-        'accept' => 'true'
+        'post_parameters' => { 'accept' => 'true' }
       }
     end
 
@@ -44,10 +44,10 @@ describe Fitbit::Api do
       expect(api_call.class).to eq(Net::HTTPOK)
     end
 
-    it 'should return a helpful error if required parameters are missing' do
-      @params.delete('accept')
-      required = ['accept']
-      error_message = "api-accept-invite requires #{required}. You're missing #{required - @params.keys}."
+    it 'should return a helpful error if required POST Parameters are missing' do
+      @params['post_parameters'] = ""
+      post_parameters = ['accept']
+      error_message = "api-accept-invite requires POST Parameters #{post_parameters}. You're missing #{post_parameters - @params.keys}."
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
 
@@ -126,6 +126,29 @@ describe Fitbit::Api do
       expect(api_call.class).to eq(Net::HTTPOK)
     end
   end
+
+  context 'API-Config-Friends-Leaderboard method' do
+    before(:each) do
+      @params = {
+        'api-method'      => 'API-Config-Friends-Leaderboard',
+        'post_parameters' => { 'hideMeFromLeaderboard' => 'true' }
+      }
+      
+    end
+
+    it 'should create API-Config-Friends-Leaderboard url' do
+      api_config_friends_leaderboard = '/1/user/-/friends/leaderboard.xml'
+      expect(subject.build_url(@api_version, @params)).to eq(api_config_friends_leaderboard)
+    end
+
+    it 'should create API-Config-Friends-Leaderboard OAuth request' do
+      api_config_friends_leaderboard_url = subject.build_url(@api_version, @params)
+      stub_request(:post, "api.fitbit.com#{api_config_friends_leaderboard_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call).to eq(Net::HTTPOK)
+    end
+  end
+
 
   context 'API-Search-Foods method' do
     before(:each) do
