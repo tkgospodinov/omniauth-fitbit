@@ -26,7 +26,6 @@ describe Fitbit::Api do
       @params = {
         'api-method' => 'API-Accept-Invite',
         'from-user-id' => 'r2d2c3p0',
-        'response-format' => 'xml',
         'accept' => 'true'
       }
     end
@@ -51,11 +50,31 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Add-Favorite-Activity method' do
+    before(:each) do
+      @params = {
+        'api-method'      => 'API-Add-Favorite-Activity',
+        'activity-id'     => '8675309'
+      }
+    end
+
+    it 'should create API-Add-Favorite-Activity url' do
+      api_add_favorite_activity_url = '/1/user/-/activities/favorite/8675309.xml'
+      expect(subject.build_url(@api_version, @params)).to eq(api_add_favorite_activity_url)
+    end
+
+    it 'should create API-Add-Favorite-Activity OAuth request' do
+      api_add_favorite_activity_url = subject.build_url(@api_version, @params)
+      stub_request(:post, "api.fitbit.com#{api_add_favorite_activity_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+  end
+
   context 'API-Search-Foods method' do
     before(:each) do
       @params = { 
         'api-method'      => 'API-Search-Foods',
-        'response-format' => 'xml',
         'query'           => 'banana cream pie'
       }
     end

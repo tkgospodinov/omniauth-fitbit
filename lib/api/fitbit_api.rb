@@ -11,13 +11,22 @@ module Fitbit
     end
 
     def build_url api_version, params
-      api_method = get_api_method(params['api-method'])
-      api_format = params['response-format']
-      api_from_user_id = "/#{params['from-user-id']}" if params['from-user-id']
-      api_from_user_id ||= ""
-      api_query = uri_encode_query(params['query']) if params['query']
+      api_url_resources = get_url_resources(params['api-method'])
+      api_format = get_response_format(params['response-format'])
+      api_required = add_api_ids(api_url_resources, params)
+      api_query = uri_encode_query(params['query']) unless params['query'].nil?
       api_query ||= ""
-      request_url = "/#{api_version}/#{api_method}#{api_from_user_id}.#{api_format}#{api_query}"
+      request_url = "/#{api_version}/#{api_required}.#{api_format}#{api_query}"
+    end
+
+    def add_api_ids api_method, params
+      ids = ['from-user-id', 'activity-id']
+      ids.each { |x| api_method << "/#{params[x]}" if params.has_key? x }
+      api_method
+    end
+
+    def get_response_format api_format
+      !api_format.nil? && api_format.downcase == 'json' ? 'json' : 'xml'
     end
 
     private 
@@ -27,12 +36,12 @@ module Fitbit
       api_method = lowercase['api-method']
 
       if @@fitbit_methods.has_key? api_method
-        required = @@fitbit_methods[api_method]['required']
+        required = @@fitbit_methods[api_method]['required'] 
       else
         return ["#{params['api-method']} is not a valid Fitbit API method."] 
       end
       
-      if lowercase.keys & required != required
+      if (@@fitbit_methods[api_method].has_key? 'required') && (lowercase.keys & required != required)
         return ["#{api_method} requires #{required}. You're missing #{required - lowercase.keys}."]
       end
       lowercase
@@ -42,7 +51,7 @@ module Fitbit
       Hash[params.map { |k,v| [k.downcase, v.downcase] }]
     end
 
-    def get_api_method method
+    def get_url_resources method
       api_method = @@fitbit_methods["#{method.downcase}"]['resources']
       api_method_url = api_method.join("/")
     end
@@ -64,8 +73,8 @@ module Fitbit
     @@api_version = 1
 
     @@fitbit_methods = {
-      'api-search-foods' => { 
-        'http_method' => 'get', 
+      'api-search-foods' => {
+        'http_method' => 'get',
         'resources'   => ['foods', 'search'],
         'required'    => ['query']
       },
@@ -73,6 +82,10 @@ module Fitbit
         'http_method' => 'post',
         'resources'   => ['user', '-', 'friends', 'invitations'],
         'required'    => ['accept']
+      },
+      'api-add-favorite-activity' => {
+        'http_method' => 'post',
+        'resources'   => ['user', '-', 'activities', 'favorite']
       }
     }
 
