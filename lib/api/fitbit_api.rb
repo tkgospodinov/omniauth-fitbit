@@ -33,13 +33,12 @@ module Fitbit
         return [build_error_message(api_method, required, required - lowercase.keys)]
       end
       
-      if (@@fitbit_methods[api_method].has_key? 'post_parameters') && 
-        ((!lowercase.has_key? 'post_parameters' || lowercase['post_parameters'].keys.nil?) ||
-        (post_parameters != lowercase['post_parameters'].keys))
-        if lowercase.has_key? 'post_parameters'
+      if @@fitbit_methods[api_method].has_key? 'post_parameters'
+        lowercase_parameters = lowercase['post_parameters']
+        if lowercase_parameters.nil? || !lowercase_parameters.is_a?(Hash)
+          return [post_parameters_error(api_method, post_parameters, post_parameters)]
+        elsif post_parameters != lowercase_parameters.keys
           return [post_parameters_error(api_method, post_parameters, post_parameters - lowercase['post_parameters'].keys)]
-        else
-          return [post_parameters_error(api_method, post_parameters, post_parameters - lowercase.keys)]
         end
       end
 
