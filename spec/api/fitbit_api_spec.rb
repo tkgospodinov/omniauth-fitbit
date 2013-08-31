@@ -131,7 +131,8 @@ describe Fitbit::Api do
     before(:each) do
       @params = {
         'api-method'      => 'API-Config-Friends-Leaderboard',
-        'post_parameters' => { 'hideMeFromLeaderboard' => 'true' }
+        'post_parameters' => { 'hideMeFromLeaderboard' => 'true' },
+        'request_headers' => { 'Accept-Language' => 'en_US' }
       }
       
     end
@@ -143,9 +144,14 @@ describe Fitbit::Api do
 
     it 'should create API-Config-Friends-Leaderboard OAuth request' do
       api_config_friends_leaderboard_url = subject.build_url(@api_version, @params)
-      stub_request(:post, "api.fitbit.com#{api_config_friends_leaderboard_url}")
+      headers = @params['request_headers']
+      stub_request(:post, "api.fitbit.com#{api_config_friends_leaderboard_url}") do |req|
+        headers.each_pair do |k,v|
+          req.headers[k] = v
+        end
+      end 
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call).to eq(Net::HTTPOK)
+      expect(api_call.class).to eq(Net::HTTPOK)
     end
   end
 

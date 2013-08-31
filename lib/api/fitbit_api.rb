@@ -45,6 +45,7 @@ module Fitbit
       if @@fitbit_methods[api_method]['auth_required'] && (auth_token == "" || auth_secret == "")
         return ["#{api_method} requires user auth_token and auth_secret."]
       end
+      
       lowercase
     end
 
@@ -64,7 +65,8 @@ module Fitbit
     def send_api_request api_params, access_token
       request_url = build_url(@@api_version, api_params)
       request_http_method = get_http_method(api_params['api-method'])
-      access_token.request( request_http_method,  "http://api.fitbit.com#{request_url}" )
+      request_headers = api_params['request_headers']
+      access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
     end
     
     def get_http_method method
