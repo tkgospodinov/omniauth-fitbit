@@ -37,7 +37,7 @@ module Fitbit
         lowercase_parameters = lowercase['post_parameters']
         if lowercase_parameters.nil? || !lowercase_parameters.is_a?(Hash)
           return [post_parameters_error(api_method, post_parameters, post_parameters)]
-        elsif post_parameters != lowercase_parameters.keys
+        elsif ((post_parameters & lowercase_parameters.keys) != post_parameters)
           return [post_parameters_error(api_method, post_parameters, post_parameters - lowercase['post_parameters'].keys)]
         end
       end
@@ -131,14 +131,22 @@ module Fitbit
       'api-browse-activites' => {
         'http_method'     => 'get',
         'resources'       => ['activities'],
-        'auth_required'   => false
+        'auth_required'   => false,
+        'request_headers' => ['accept-locale']
       },
       'api-config-friends-leaderboard' => {
         'http_method'     => 'post',
         'resources'       => ['user', '-', 'friends', 'leaderboard'],
-        'post_parameters' => ['hideMeFromLeaderboard'],
         'auth_required'   => true,
+        'post_parameters' => ['hideMeFromLeaderboard'],
         'request_headers' => ['accept-language']
+      },
+      'api-create-food' => {
+        'http_method'     => 'post',
+        'resources'       => ['foods'],
+        'auth_required'   => true,
+        'post_parameters' => ['defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
+        'request_headers' => ['accept-locale']
       }
     }
 

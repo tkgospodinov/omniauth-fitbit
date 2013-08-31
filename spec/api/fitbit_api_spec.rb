@@ -111,7 +111,10 @@ describe Fitbit::Api do
   
   context 'API-Browse-Activites method' do
     before(:each) do
-      @params = { 'api-method' => 'API-Browse-Activites' }
+      @params = { 
+        'api-method' => 'API-Browse-Activites',
+        'request-headers'   => { 'Accept-Locale' => 'en_US' }
+      }
     end
 
     it 'should create API-Browse-Activites url' do
@@ -152,6 +155,62 @@ describe Fitbit::Api do
       end 
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required POST Parameters are missing' do
+      post_parameters = @params['post_parameters'].keys
+      @params['post_parameters'] = ""
+      error_message = "api-config-friends-leaderboard requires POST Parameters #{post_parameters}. You're missing #{post_parameters - @params.keys}."
+      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "api-config-friends-leaderboard requires user auth_token and auth_secret."
+      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+    end
+  end
+  
+  context 'API-Create-Food method' do
+    before(:each) do
+      @params = {
+        'api-method'      => 'API-Create-Food',
+        'post_parameters' => { 
+          'defaultFoodMeasurementUnitId'  => '1',
+          'defaultServingSize'            => '1',
+          'calories'                      => '1000',
+          'formType'                      => 'LIQUID',
+          'description'                   => 'Say something here about the new food'
+        },
+        'request_headers' => { 'Accept-Locale' => 'en_US' }
+      }
+    end
+
+    it 'should create API-Create-Food url' do
+      api_create_food_url = '/1/foods.xml'
+      expect(subject.build_url(@api_version, @params)).to eq(api_create_food_url)
+    end
+
+    it 'should create API-Create-Food OAuth request' do
+      api_create_food_url = subject.build_url(@api_version, @params)
+      stub_request(:post, "api.fitbit.com#{api_create_food_url}") do |req|
+        headers.each_pair do |k,v|
+          req.headers[k] = v
+        end
+      end 
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required POST Parameters are missing' do
+      post_parameters = @params['post_parameters'].keys - ['formType', 'description']
+      @params['post_parameters'] = ""
+      error_message = "api-create-food requires POST Parameters #{post_parameters}. You're missing #{post_parameters - @params.keys}."
+      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "api-create-food requires user auth_token and auth_secret."
+      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
 
