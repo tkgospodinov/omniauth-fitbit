@@ -37,6 +37,7 @@ describe Fitbit::Api do
   context 'API-Accept-Invite method' do
     before(:each) do
       @api_method = 'api-accept-invite'
+      @api_url = '/1/user/-/friends/invitations/r2d2c3p0.xml'
       @params = {
         'api-method' => 'API-Accept-Invite',
         'from-user-id' => 'r2d2c3p0',
@@ -45,13 +46,11 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Accept-Invite url' do
-      api_url = '/1/user/-/friends/invitations/r2d2c3p0.xml'
-      expect(subject.build_url(@api_version, @params)).to eq(api_url)
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
     it 'should create API-Accept-Invite OAuth request' do
-      api_accept_invite_url = subject.build_url(@api_version, @params)
-      stub_request(:post, "api.fitbit.com#{api_accept_invite_url}")
+      stub_request(:post, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
@@ -72,6 +71,7 @@ describe Fitbit::Api do
   context 'API-Add-Favorite-Activity method' do
     before(:each) do
       @api_method = 'api-add-favorite-activity' 
+      @api_url = '/1/user/-/activities/favorite/8675309.xml'
       @params = {
         'api-method'      => 'API-Add-Favorite-Activity',
         'activity-id'     => '8675309'
@@ -79,13 +79,11 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Add-Favorite-Activity url' do
-      api_url = '/1/user/-/activities/favorite/8675309.xml'
-      expect(subject.build_url(@api_version, @params)).to eq(api_url)
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
     it 'should create API-Add-Favorite-Activity OAuth request' do
-      api_add_favorite_activity_url = subject.build_url(@api_version, @params)
-      stub_request(:post, "api.fitbit.com#{api_add_favorite_activity_url}")
+      stub_request(:post, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
@@ -99,6 +97,7 @@ describe Fitbit::Api do
   context 'API-Add-Favorite-Food method' do
     before(:each) do
       @api_method = 'api-add-favorite-food'
+      @api_url = '/1/user/-/foods/log/favorite/12345.xml'
       @params = {
         'api-method'      => 'API-Add-Favorite-Food',
         'food-id'         => '12345'
@@ -106,13 +105,11 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Add-Favorite-Food url' do
-      api_url = '/1/user/-/foods/log/favorite/12345.xml'
-      expect(subject.build_url(@api_version, @params)).to eq(api_url)
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
     it 'should create API-Add-Favorite-Food OAuth request' do
-      api_url = subject.build_url(@api_version, @params)
-      stub_request(:post, "api.fitbit.com#{api_url}")
+      stub_request(:post, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
@@ -126,6 +123,7 @@ describe Fitbit::Api do
   context 'API-Browse-Activites method' do
     before(:each) do
       @api_method = 'api-browse-activites'
+      @api_url = '/1/activities.xml'
       @params = { 
         'api-method' => 'API-Browse-Activites',
         'request-headers'   => { 'Accept-Locale' => 'en_US' }
@@ -133,13 +131,11 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Browse-Activites url' do
-      api_url = '/1/activities.xml'
-      expect(subject.build_url(@api_version, @params)).to eq(api_url)
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
     it 'should create API-Browse-Activites OAuth request' do
-      api_browse_activites_url = subject.build_url(@api_version, @params)
-      stub_request(:get, "api.fitbit.com#{api_browse_activites_url}")
+      stub_request(:get, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
@@ -148,6 +144,7 @@ describe Fitbit::Api do
   context 'API-Config-Friends-Leaderboard method' do
     before(:each) do
       @api_method = 'api-config-friends-leaderboard'
+      @api_url = '/1/user/-/friends/leaderboard.xml'
       @params = {
         'api-method'      => 'API-Config-Friends-Leaderboard',
         'post_parameters' => { 'hideMeFromLeaderboard' => 'true' },
@@ -157,14 +154,12 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Config-Friends-Leaderboard url' do
-      api_url = '/1/user/-/friends/leaderboard.xml'
-      expect(subject.build_url(@api_version, @params)).to eq(api_url)
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
     it 'should create API-Config-Friends-Leaderboard OAuth request' do
-      api_config_friends_leaderboard_url = subject.build_url(@api_version, @params)
       headers = @params['request_headers']
-      stub_request(:post, "api.fitbit.com#{api_config_friends_leaderboard_url}") do |req|
+      stub_request(:post, "api.fitbit.com#{@api_url}") do |req|
         headers.each_pair do |k,v|
           req.headers[k] = v
         end
@@ -189,6 +184,7 @@ describe Fitbit::Api do
   context 'API-Create-Food method' do
     before(:each) do
       @api_method = 'api-create-food'
+      @api_url = '/1/foods.xml'
       @params = {
         'api-method'      => 'API-Create-Food',
         'post_parameters' => { 
@@ -203,13 +199,11 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Create-Food url' do
-      api_url = '/1/foods.xml'
-      expect(subject.build_url(@api_version, @params)).to eq(api_url)
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
     it 'should create API-Create-Food OAuth request' do
-      api_create_food_url = subject.build_url(@api_version, @params)
-      stub_request(:post, "api.fitbit.com#{api_create_food_url}") do |req|
+      stub_request(:post, "api.fitbit.com#{@api_url}") do |req|
         headers.each_pair do |k,v|
           req.headers[k] = v
         end
@@ -235,6 +229,7 @@ describe Fitbit::Api do
   context 'API-Search-Foods method' do
     before(:each) do
       @api_method = 'api-search-foods'
+      @api_url = '/1/foods/search.xml?query=banana%20cream%20pie'
       @params = { 
         'api-method'      => 'API-Search-Foods',
         'query'           => 'banana cream pie'
@@ -242,13 +237,11 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Search-Foods url' do
-      api_search_foods_url = '/1/foods/search.xml?query=banana%20cream%20pie'
-      expect(subject.build_url(@api_version, @params)).to eq(api_search_foods_url)
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
     it 'should create API-Search-Foods OAuth request' do
-      api_search_foods_url = subject.build_url(@api_version, @params)
-      stub_request(:get, "api.fitbit.com#{api_search_foods_url}")
+      stub_request(:get, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
