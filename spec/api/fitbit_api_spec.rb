@@ -5,6 +5,17 @@ describe Fitbit::Api do
     Fitbit::Api.new({})
   end
 
+  def helpful_errors api_method, data_type, required_data, supplied_data
+    case data_type
+    when "post_parameters"
+      "#{api_method} requires POST Parameters #{required_data}. You're missing #{required_data - supplied_data}."
+    when "required_parameters"
+      "#{api_method} requires #{required_data}. You're missing #{required_data - supplied_data}."
+    else
+      "#{api_method} is not a valid error type."
+    end
+  end
+
   before(:all) do
     @consumer_key = 'user_consumer_key'
     @consumer_secret = 'user_consumer_secret'
@@ -25,6 +36,7 @@ describe Fitbit::Api do
 
   context 'API-Accept-Invite method' do
     before(:each) do
+      @api_method = 'api-accept-invite'
       @params = {
         'api-method' => 'API-Accept-Invite',
         'from-user-id' => 'r2d2c3p0',
@@ -47,18 +59,19 @@ describe Fitbit::Api do
     it 'should return a helpful error if required POST Parameters are missing' do
       @params['post_parameters'] = ""
       post_parameters = ['accept']
-      error_message = "api-accept-invite requires POST Parameters #{post_parameters}. You're missing #{post_parameters - @params.keys}."
+      error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
-      error_message = "api-accept-invite requires user auth_token and auth_secret."
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
 
   context 'API-Add-Favorite-Activity method' do
     before(:each) do
+      @api_method = 'api-add-favorite-activity' 
       @params = {
         'api-method'      => 'API-Add-Favorite-Activity',
         'activity-id'     => '8675309'
@@ -78,13 +91,14 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
-      error_message = "api-add-favorite-activity requires user auth_token and auth_secret."
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
 
   context 'API-Add-Favorite-Food method' do
     before(:each) do
+      @api_method = 'api-add-favorite-food'
       @params = {
         'api-method'      => 'API-Add-Favorite-Food',
         'food-id'         => '12345'
@@ -104,13 +118,14 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
-      error_message = "api-add-favorite-food requires user auth_token and auth_secret."
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
   
   context 'API-Browse-Activites method' do
     before(:each) do
+      @api_method = 'api-browse-activites'
       @params = { 
         'api-method' => 'API-Browse-Activites',
         'request-headers'   => { 'Accept-Locale' => 'en_US' }
@@ -132,6 +147,7 @@ describe Fitbit::Api do
 
   context 'API-Config-Friends-Leaderboard method' do
     before(:each) do
+      @api_method = 'api-config-friends-leaderboard'
       @params = {
         'api-method'      => 'API-Config-Friends-Leaderboard',
         'post_parameters' => { 'hideMeFromLeaderboard' => 'true' },
@@ -160,18 +176,19 @@ describe Fitbit::Api do
     it 'should return a helpful error if required POST Parameters are missing' do
       post_parameters = @params['post_parameters'].keys
       @params['post_parameters'] = ""
-      error_message = "api-config-friends-leaderboard requires POST Parameters #{post_parameters}. You're missing #{post_parameters - @params.keys}."
+      error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
-      error_message = "api-config-friends-leaderboard requires user auth_token and auth_secret."
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
   
   context 'API-Create-Food method' do
     before(:each) do
+      @api_method = 'api-create-food'
       @params = {
         'api-method'      => 'API-Create-Food',
         'post_parameters' => { 
@@ -204,12 +221,12 @@ describe Fitbit::Api do
     it 'should return a helpful error if required POST Parameters are missing' do
       post_parameters = @params['post_parameters'].keys - ['formType', 'description']
       @params['post_parameters'] = ""
-      error_message = "api-create-food requires POST Parameters #{post_parameters}. You're missing #{post_parameters - @params.keys}."
+      error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
-      error_message = "api-create-food requires user auth_token and auth_secret."
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
@@ -217,6 +234,7 @@ describe Fitbit::Api do
 
   context 'API-Search-Foods method' do
     before(:each) do
+      @api_method = 'api-search-foods'
       @params = { 
         'api-method'      => 'API-Search-Foods',
         'query'           => 'banana cream pie'
@@ -237,8 +255,8 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required parameters are missing' do
       @params.delete('query')
-      required = ['query']
-      error_message = "api-search-foods requires #{required}. You're missing #{required - @params.keys}."
+      required_parameters = ['query']
+      error_message = helpful_errors(@api_method, "required_parameters", required_parameters, @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
