@@ -16,6 +16,10 @@ module Fitbit
       request_url = "/#{api_version}/#{api_ids}.#{api_format}#{api_query}"
     end
 
+    def get_fitbit_methods
+      @@fitbit_methods
+    end
+
     private 
 
     def valid_params params, auth_token, auth_secret
@@ -23,14 +27,14 @@ module Fitbit
       api_method = lowercase['api-method']
 
       if @@fitbit_methods.has_key? api_method
-        required = @@fitbit_methods[api_method]['required'] 
+        required_parameters = @@fitbit_methods[api_method]['required_parameters'] 
         post_parameters = @@fitbit_methods[api_method]['post_parameters']
       else
         return ["#{params['api-method']} is not a valid Fitbit API method."] 
       end
       
-      if (@@fitbit_methods[api_method].has_key? 'required') && (lowercase.keys & required != required)
-        return [build_error_message(api_method, required, required - lowercase.keys)]
+      if (@@fitbit_methods[api_method].has_key? 'required_parameters') && (lowercase.keys & required_parameters != required_parameters)
+        return [build_error_message(api_method, required_parameters, required_parameters - lowercase.keys)]
       end
       
       if @@fitbit_methods[api_method].has_key? 'post_parameters'
@@ -107,46 +111,46 @@ module Fitbit
 
     @@fitbit_methods = {
       'api-search-foods' => {
-        'http_method'     => 'get',
-        'resources'       => ['foods', 'search'],
-        'required'        => ['query'],
-        'auth_required'   => false
+        'http_method'         => 'get',
+        'resources'           => ['foods', 'search'],
+        'required_parameters' => ['query'],
+        'auth_required'       => false
       },
       'api-accept-invite' => {
-        'http_method'     => 'post',
-        'resources'       => ['user', '-', 'friends', 'invitations'],
-        'post_parameters' => ['accept'],
-        'auth_required'   => true
+        'http_method'         => 'post',
+        'resources'           => ['user', '-', 'friends', 'invitations'],
+        'post_parameters'     => ['accept'],
+        'auth_required'       => true
       },
       'api-add-favorite-activity' => {
-        'http_method'     => 'post',
-        'resources'       => ['user', '-', 'activities', 'favorite'],
-        'auth_required'   => true
+        'http_method'         => 'post',
+        'resources'           => ['user', '-', 'activities', 'favorite'],
+        'auth_required'       => true
       },
       'api-add-favorite-food' => {
-        'http_method'     => 'post',
-        'resources'       => ['user', '-', 'foods', 'log', 'favorite'],
-        'auth_required'   => true
+        'http_method'         => 'post',
+        'resources'           => ['user', '-', 'foods', 'log', 'favorite'],
+        'auth_required'       => true
       },
       'api-browse-activites' => {
-        'http_method'     => 'get',
-        'resources'       => ['activities'],
-        'auth_required'   => false,
-        'request_headers' => ['accept-locale']
+        'http_method'         => 'get',
+        'resources'           => ['activities'],
+        'auth_required'       => false,
+        'request_headers'     => ['accept-locale']
       },
       'api-config-friends-leaderboard' => {
-        'http_method'     => 'post',
-        'resources'       => ['user', '-', 'friends', 'leaderboard'],
-        'auth_required'   => true,
-        'post_parameters' => ['hideMeFromLeaderboard'],
-        'request_headers' => ['accept-language']
+        'http_method'         => 'post',
+        'resources'           => ['user', '-', 'friends', 'leaderboard'],
+        'auth_required'       => true,
+        'post_parameters'     => ['hideMeFromLeaderboard'],
+        'request_headers'     => ['accept-language']
       },
       'api-create-food' => {
-        'http_method'     => 'post',
-        'resources'       => ['foods'],
-        'auth_required'   => true,
-        'post_parameters' => ['defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
-        'request_headers' => ['accept-locale']
+        'http_method'         => 'post',
+        'resources'           => ['foods'],
+        'auth_required'       => true,
+        'post_parameters'     => ['defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
+        'request_headers'     => ['accept-locale']
       }
     }
 

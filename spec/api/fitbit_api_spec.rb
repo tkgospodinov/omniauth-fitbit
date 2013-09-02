@@ -22,6 +22,7 @@ describe Fitbit::Api do
     @auth_token = 'user_token'
     @auth_secret = 'user_secret'
     @api_version = 1
+    @fitbit_methods = subject.get_fitbit_methods
   end
 
   context 'invalid Fitbit API method' do
@@ -56,8 +57,8 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
-      @params['post_parameters'] = ""
-      post_parameters = ['accept']
+      post_parameters = @fitbit_methods[@api_method]['post_parameters']
+      post_parameters.each { |parameter| @params['post_parameters'].delete(parameter) }
       error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
@@ -169,8 +170,8 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
-      post_parameters = @params['post_parameters'].keys
-      @params['post_parameters'] = ""
+      post_parameters = @fitbit_methods[@api_method]['post_parameters']
+      post_parameters.each { |parameter| @params['post_parameters'].delete(parameter) }
       error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
@@ -213,8 +214,8 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
-      post_parameters = @params['post_parameters'].keys - ['formType', 'description']
-      @params['post_parameters'] = ""
+      post_parameters = @fitbit_methods[@api_method]['post_parameters']
+      post_parameters.each { |parameter| @params['post_parameters'].delete(parameter) }
       error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
@@ -247,8 +248,8 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required parameters are missing' do
-      @params.delete('query')
-      required_parameters = ['query']
+      required_parameters = @fitbit_methods[@api_method]['required_parameters']
+      required_parameters.each { |parameter| @params.delete(parameter) }
       error_message = helpful_errors(@api_method, "required_parameters", required_parameters, @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
