@@ -45,7 +45,7 @@ describe Fitbit::Api do
     end
     it 'should return a helpful error' do
       error_message = "#{@params['api-method'].downcase} is not a valid Fitbit API method."
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
 
@@ -72,12 +72,12 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required POST Parameters are missing' do
       error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret."
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
 
@@ -103,7 +103,7 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret."
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
 
@@ -129,7 +129,7 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret."
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
   
@@ -183,12 +183,12 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required POST Parameters are missing' do
       error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret."
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
   
@@ -225,12 +225,12 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required POST Parameters are missing' do
       error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret."
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
 
@@ -257,7 +257,7 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
     

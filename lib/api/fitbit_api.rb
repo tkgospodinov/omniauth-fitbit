@@ -4,7 +4,7 @@ module Fitbit
     def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
       api_params = get_lowercase(params)
       api_error = check_for_api_errors(api_params, auth_token, auth_secret)
-      return api_error unless api_error.nil?
+      raise api_error unless api_error.nil?
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
       send_api_request(api_params, access_token)
     end
@@ -40,7 +40,7 @@ module Fitbit
           api_error = "#{api_method} requires user auth_token and auth_secret."
         end
       else
-        api_error ||= "#{params['api-method']} is not a valid Fitbit API method." 
+        api_error = "#{params['api-method']} is not a valid Fitbit API method." 
       end
       api_error
     end
