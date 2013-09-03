@@ -39,13 +39,8 @@ module Fitbit
         return build_error_message(api_method, required_parameters, required_parameters - params.keys)
       end
       
-      if fitbit_api_method.has_key? 'post_parameters'
-        supplied_post_parameters = params['post_parameters']
-        if supplied_post_parameters.nil? || !supplied_post_parameters.is_a?(Hash)
-          return post_parameters_error(api_method, required_post_parameters, required_post_parameters)
-        elsif ((required_post_parameters & supplied_post_parameters.keys) != required_post_parameters)
-          return post_parameters_error(api_method, required_post_parameters, required_post_parameters - params['post_parameters'].keys)
-        end
+      if is_missing_post_parameters? fitbit_api_method, required_post_parameters, params
+        return post_parameters_error(api_method, required_post_parameters, required_post_parameters - params['post_parameters'].keys)
       end
 
       if fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
@@ -66,6 +61,11 @@ module Fitbit
 
     def is_missing_required_parameters? api_method, required_parameters, params
       (api_method.has_key? 'required_parameters') && (params.keys & required_parameters != required_parameters)
+    end
+
+    def is_missing_post_parameters? api_method, required_post_parameters, params
+      (api_method.has_key? 'post_parameters') &&
+        (params['post_parameters'] == nil || required_post_parameters - params['post_parameters'].keys != [])
     end
 
     def build_error_message api_method, required, missing
