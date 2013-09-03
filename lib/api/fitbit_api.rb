@@ -3,7 +3,7 @@ module Fitbit
     
     def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
       api_params = get_lowercase(params)
-      api_error = valid_params?(api_params, auth_token, auth_secret)
+      api_error = check_for_api_errors(api_params, auth_token, auth_secret)
       return api_error unless api_error.nil?
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
       send_api_request(api_params, access_token)
@@ -23,30 +23,26 @@ module Fitbit
 
     private 
 
-    def valid_params? params, auth_token, auth_secret
+    def check_for_api_errors params, auth_token, auth_secret
       api_method = params['api-method']
+      api_error = nil
 
       if is_fitbit_api_method? api_method
         fitbit_api_method = @@fitbit_methods[api_method]
         required_parameters = fitbit_api_method['required_parameters'] 
         required_post_parameters = fitbit_api_method['post_parameters']
+
+        if is_missing_required_parameters? fitbit_api_method, required_parameters, params
+          api_error = required_parameters_error(api_method, required_parameters, required_parameters - params.keys)
+        elsif is_missing_post_parameters? fitbit_api_method, required_post_parameters, params
+          api_error = post_parameters_error(api_method, required_post_parameters, required_post_parameters - params['post_parameters'].keys)
+        elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
+          api_error = "#{api_method} requires user auth_token and auth_secret."
+        end
       else
-        return "#{params['api-method']} is not a valid Fitbit API method."
+        api_error ||= "#{params['api-method']} is not a valid Fitbit API method." 
       end
-
-
-      if is_missing_required_parameters? fitbit_api_method, required_parameters, params
-        return build_error_message(api_method, required_parameters, required_parameters - params.keys)
-      end
-      
-      if is_missing_post_parameters? fitbit_api_method, required_post_parameters, params
-        return post_parameters_error(api_method, required_post_parameters, required_post_parameters - params['post_parameters'].keys)
-      end
-
-      if fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
-        return "#{api_method} requires user auth_token and auth_secret."
-      end
-      
+      api_error
     end
 
     def get_lowercase params
@@ -68,7 +64,7 @@ module Fitbit
         (params['post_parameters'] == nil || required_post_parameters - params['post_parameters'].keys != [])
     end
 
-    def build_error_message api_method, required, missing
+    def required_parameters_error api_method, required, missing
       "#{api_method} requires #{required}. You're missing #{missing}."
     end
 
