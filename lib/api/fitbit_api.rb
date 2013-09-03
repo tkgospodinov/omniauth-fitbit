@@ -2,8 +2,9 @@ module Fitbit
   class Api < OmniAuth::Strategies::Fitbit
     
     def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
-      api_params = valid_params(params, auth_token, auth_secret)
-      return api_params[0] if api_params.is_a? Array
+      api_params = get_lowercase(params)
+      api_error = valid_params?(api_params, auth_token, auth_secret)
+      return api_error unless api_error.nil?
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
       send_api_request(api_params, access_token)
     end
@@ -22,35 +23,49 @@ module Fitbit
 
     private 
 
-    def valid_params params, auth_token, auth_secret
-      lowercase = get_lowercase(params)
-      api_method = lowercase['api-method']
+    def valid_params? params, auth_token, auth_secret
+      api_method = params['api-method']
 
-      if @@fitbit_methods.has_key? api_method
-        required_parameters = @@fitbit_methods[api_method]['required_parameters'] 
-        post_parameters = @@fitbit_methods[api_method]['post_parameters']
+      if is_fitbit_api_method? api_method
+        fitbit_api_method = @@fitbit_methods[api_method]
+        required_parameters = fitbit_api_method['required_parameters'] 
+        required_post_parameters = fitbit_api_method['post_parameters']
       else
-        return ["#{params['api-method']} is not a valid Fitbit API method."] 
+        return "#{params['api-method']} is not a valid Fitbit API method."
+      end
+
+
+      if is_missing_required_parameters? fitbit_api_method, required_parameters, params
+        return build_error_message(api_method, required_parameters, required_parameters - params.keys)
       end
       
-      if (@@fitbit_methods[api_method].has_key? 'required_parameters') && (lowercase.keys & required_parameters != required_parameters)
-        return [build_error_message(api_method, required_parameters, required_parameters - lowercase.keys)]
-      end
-      
-      if @@fitbit_methods[api_method].has_key? 'post_parameters'
-        lowercase_parameters = lowercase['post_parameters']
-        if lowercase_parameters.nil? || !lowercase_parameters.is_a?(Hash)
-          return [post_parameters_error(api_method, post_parameters, post_parameters)]
-        elsif ((post_parameters & lowercase_parameters.keys) != post_parameters)
-          return [post_parameters_error(api_method, post_parameters, post_parameters - lowercase['post_parameters'].keys)]
+      if fitbit_api_method.has_key? 'post_parameters'
+        supplied_post_parameters = params['post_parameters']
+        if supplied_post_parameters.nil? || !supplied_post_parameters.is_a?(Hash)
+          return post_parameters_error(api_method, required_post_parameters, required_post_parameters)
+        elsif ((required_post_parameters & supplied_post_parameters.keys) != required_post_parameters)
+          return post_parameters_error(api_method, required_post_parameters, required_post_parameters - params['post_parameters'].keys)
         end
       end
 
-      if @@fitbit_methods[api_method]['auth_required'] && (auth_token == "" || auth_secret == "")
-        return ["#{api_method} requires user auth_token and auth_secret."]
+      if fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
+        return "#{api_method} requires user auth_token and auth_secret."
       end
       
-      lowercase
+    end
+
+    def get_lowercase params
+      api_strings = Hash[params.map { |k,v| [k.downcase, v.downcase] if v.is_a? String }]
+      api_parameters_and_headers = Hash[params.map { |k,v| [k.downcase, v] if !v.is_a? String }]
+      api_strings.merge(api_parameters_and_headers)
+    end
+    
+    def is_fitbit_api_method? api_method
+      @@fitbit_methods.has_key? api_method
+    end
+
+    def is_missing_required_parameters? api_method, required_parameters, params
+      (api_method.has_key? 'required_parameters') && (params.keys & required_parameters != required_parameters)
     end
 
     def build_error_message api_method, required, missing
@@ -90,12 +105,6 @@ module Fitbit
       ids = ['from-user-id', 'activity-id', 'food-id']
       ids.each { |x| api_method << "/#{params[x]}" if params.has_key? x }
       api_method
-    end
-
-    def get_lowercase params
-      api_strings = Hash[params.map { |k,v| [k.downcase, v.downcase] if v.is_a? String }]
-      api_parameters_and_headers = Hash[params.map { |k,v| [k.downcase, v] if !v.is_a? String }]
-      api_strings.merge(api_parameters_and_headers)
     end
 
     def uri_encode_query query

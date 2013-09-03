@@ -5,14 +5,28 @@ describe Fitbit::Api do
     Fitbit::Api.new({})
   end
 
-  def helpful_errors api_method, data_type, required_data, supplied_data
+  def helpful_errors api_method, data_type, supplied_data
+    required_data = get_required_data(@api_method, data_type)
+    missing_data = delete_required_data(supplied_data, required_data, data_type)
     case data_type
-    when "post_parameters"
-      "#{api_method} requires POST Parameters #{required_data}. You're missing #{required_data - supplied_data}."
-    when "required_parameters"
-      "#{api_method} requires #{required_data}. You're missing #{required_data - supplied_data}."
+    when 'post_parameters'
+      "#{api_method} requires POST Parameters #{required_data}. You're missing #{missing_data}."
+    when 'required_parameters'
+      "#{api_method} requires #{required_data}. You're missing #{missing_data}."
     else
       "#{api_method} is not a valid error type."
+    end
+  end
+
+  def get_required_data api_method, data_type
+    @fitbit_methods[@api_method][data_type]
+  end
+
+  def delete_required_data supplied_data, required_data, data_type
+    if data_type == 'required_parameters'
+      required_data.each { |parameter| @params.delete(parameter) }
+    else
+      required_data.each { |parameter| @params[data_type].delete(parameter) }
     end
   end
 
@@ -30,8 +44,8 @@ describe Fitbit::Api do
       @params = { 'api-method' => 'API-Search-Fudd' }
     end
     it 'should return a helpful error' do
-      error_message = "#{@params['api-method']} is not a valid Fitbit API method."
-      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq("#{error_message}")
+      error_message = "#{@params['api-method'].downcase} is not a valid Fitbit API method."
+      expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
 
@@ -57,9 +71,7 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
-      post_parameters = @fitbit_methods[@api_method]['post_parameters']
-      post_parameters.each { |parameter| @params['post_parameters'].delete(parameter) }
-      error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
 
@@ -170,9 +182,7 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
-      post_parameters = @fitbit_methods[@api_method]['post_parameters']
-      post_parameters.each { |parameter| @params['post_parameters'].delete(parameter) }
-      error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
 
@@ -214,9 +224,7 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
-      post_parameters = @fitbit_methods[@api_method]['post_parameters']
-      post_parameters.each { |parameter| @params['post_parameters'].delete(parameter) }
-      error_message = helpful_errors(@api_method, "post_parameters", post_parameters, @params.keys)
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
 
@@ -248,9 +256,7 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required parameters are missing' do
-      required_parameters = @fitbit_methods[@api_method]['required_parameters']
-      required_parameters.each { |parameter| @params.delete(parameter) }
-      error_message = helpful_errors(@api_method, "required_parameters", required_parameters, @params.keys)
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       expect(subject.api_call(@consumer_key, @consumer_secret, @params)).to eq(error_message)
     end
   end
