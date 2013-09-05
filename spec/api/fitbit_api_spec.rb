@@ -6,11 +6,15 @@ describe Fitbit::Api do
   end
 
   def helpful_errors api_method, data_type, supplied_data
-    required_data = get_required_data(@api_method, data_type)
-    missing_data = delete_required_data(supplied_data, required_data, data_type)
+    required_data = get_required_data(api_method, data_type)
+    missing_data = delete_required_data(required_data, data_type)
     case data_type
     when 'post_parameters'
       "#{api_method} requires POST Parameters #{required_data}. You're missing #{missing_data}."
+    when 'exclusive_post_parameters'
+      exclusive_data = get_exclusive_data(api_method, 'post_parameters')
+      extra_data = get_extra_data(exclusive_data)
+      "#{api_method} allows only one of these POST Parameters #{exclusive_data}. You used #{extra_data}."
     when 'required_parameters'
       "#{api_method} requires #{required_data}. You're missing #{missing_data}."
     else
@@ -18,27 +22,27 @@ describe Fitbit::Api do
     end
   end
 
-  def helpful_optional_errors api_method, data_type, supplied_data
-    required_data = get_required_data(@api_method, 'optional')[data_type]
-    extra_data = required_data.each do |data| 
-      @params[data] = "data" if data.is_a? Array 
-    end
-    case data_type
-    when 'post_parameters' 
-      "#{extra_data}"
-    end
-  end
-
   def get_required_data api_method, data_type
-    @fitbit_methods[@api_method][data_type]
+    @fitbit_methods[api_method][data_type]
   end
 
-  def delete_required_data supplied_data, required_data, data_type
+  def get_exclusive_data api_method, data_type
+    post_parameters = @fitbit_methods[api_method][data_type]
+    exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } if post_parameters
+    exclusive_post_parameters.flatten if exclusive_post_parameters
+  end
+
+  def delete_required_data required_data, data_type
     if data_type == 'required_parameters'
       required_data.each { |parameter| @params.delete(parameter) }
-    else
-      required_data.each { |parameter| @params[data_type].delete(parameter) }
+    elsif data_type == 'post_parameters'
+      required_data.each { |parameter| @params[data_type].delete(parameter) unless parameter.is_a? Array }
     end
+  end
+
+  def get_extra_data exclusive_data
+    extra_data = exclusive_data.each { |exclusive| @params['post_parameters'][exclusive] = 'cheese' } if exclusive_data
+    extra_data.map { |data| "'#{data}'" }.join(' AND ')
   end
 
   before(:all) do
@@ -271,8 +275,8 @@ describe Fitbit::Api do
       expect(api_call.class).to eq(Net::HTTPOK)
     end
 
-    it 'should return a halpful error when two optional POST Parameters are included, but only one of that type are allowed' do
-      error_message = helpful_optional_errors(@api_method, 'post_parameters', @params.keys)
+    it 'should return a helpful error if both _invitedUserEmail_ and _invitedUserId_ exclusive POST Parameters are used' do
+      error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 

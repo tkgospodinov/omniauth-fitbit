@@ -35,7 +35,7 @@ module Fitbit
       elsif is_missing_post_parameters? fitbit_api_method, params
         api_error = post_parameters_error(api_method, params['post_parameters'].keys)
       elsif is_breaking_exclusive_post_parameter_rule? fitbit_api_method, params
-        api_error = "cheese"
+        api_error = exclusive_post_parameters_error(api_method, params['post_parameters'].keys)
       elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
         api_error = "#{api_method} requires user auth_token and auth_secret."
       end
@@ -57,12 +57,29 @@ module Fitbit
     end
 
     def is_missing_post_parameters? api_method, params
-      required_post_parameters = api_method['post_parameters']
-      (api_method.has_key? 'post_parameters') &&
-        (params['post_parameters'] == nil || required_post_parameters - params['post_parameters'].keys != [])
+      required_post_parameters = api_method['post_parameters'].select { |x| !x.is_a? Array } if api_method['post_parameters']
+      supplied_post_parameters = params['post_parameters']
+      (required_post_parameters) &&
+        (!params['post_parameters'] || required_post_parameters - supplied_post_parameters.keys != [])
     end
 
     def is_breaking_exclusive_post_parameter_rule? api_method, params
+      exclusive_post_parameters = get_exclusive_post_parameters api_method
+      supplied_post_parameters = params['post_parameters']
+      count = 0
+      if exclusive_post_parameters && supplied_post_parameters
+        supplied_post_parameters.keys.each do |parameter|
+          count +=1 if exclusive_post_parameters.include? parameter
+        end
+      end
+
+      count > 1
+    end
+
+    def get_exclusive_post_parameters fitbit_api_method
+      post_parameters = fitbit_api_method['post_parameters']
+      exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } if post_parameters 
+      exclusive_post_parameters.flatten if exclusive_post_parameters
     end
 
     def required_parameters_error api_method, supplied
@@ -73,6 +90,12 @@ module Fitbit
     def post_parameters_error api_method, supplied
       required = @@fitbit_methods[api_method]['post_parameters']
       "#{api_method} requires POST Parameters #{required}. You're missing #{required-supplied}."
+    end
+
+    def exclusive_post_parameters_error api_method, supplied
+      exclusive_post_parameters = get_exclusive_post_parameters @@fitbit_methods[api_method]
+      all_supplied = supplied.map { |data| "'#{data}'" }.join(' AND ')
+      "#{api_method} allows only one of these POST Parameters #{exclusive_post_parameters}. You used #{all_supplied}."
     end
 
     def build_request consumer_key, consumer_secret, auth_token, auth_secret
@@ -164,9 +187,7 @@ module Fitbit
         'http_method'         => 'post',
         'resources'           => ['user', '-', 'friends', 'invitations'],
         'auth_required'       => true,
-        'optional'            => {
-          'post_parameters'       => [ { 'exclusive' => ['invitedUserEmail', 'invitedUserId'] } ]
-        }
+        'post_parameters'     =>  [ ['invitedUserEmail', 'invitedUserId'] ] 
       }
     }
 
