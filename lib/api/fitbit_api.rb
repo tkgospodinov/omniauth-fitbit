@@ -12,7 +12,7 @@ module Fitbit
     def build_url api_version, params
       api_url_resources = get_url_resources(params['api-method'])
       api_format = get_response_format(params['response-format'])
-      api_ids = add_api_ids(api_url_resources, params)
+      api_ids = add_api_ids(api_url_resources, params) if @@fitbit_methods[params['api-method']]['required_parameters']
       api_query = uri_encode_query(params['query']) 
       request_url = "/#{api_version}/#{api_ids}.#{api_format}#{api_query}"
     end
