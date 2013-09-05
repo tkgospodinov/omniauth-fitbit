@@ -3,8 +3,8 @@ module Fitbit
     
     def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
       api_params = get_lowercase(params)
-      api_error = check_for_api_errors(api_params, auth_token, auth_secret)
-      raise api_error unless api_error.nil?
+      api_error = return_any_api_errors(api_params, auth_token, auth_secret)
+      raise api_error if api_error
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
       send_api_request(api_params, access_token)
     end
@@ -23,26 +23,22 @@ module Fitbit
 
     private 
 
-    def check_for_api_errors params, auth_token, auth_secret
-      api_method = params['api-method']
+    def return_any_api_errors params, auth_token, auth_secret
       api_error = nil
+      api_method = params['api-method']
+      fitbit_api_method = @@fitbit_methods[api_method]
 
-      if is_fitbit_api_method? api_method
-        fitbit_api_method = @@fitbit_methods[api_method]
-        required_parameters = fitbit_api_method['required_parameters'] 
-        required_post_parameters = fitbit_api_method['post_parameters']
-
-        if is_missing_required_parameters? fitbit_api_method, required_parameters, params
-          api_error = required_parameters_error(api_method, required_parameters, required_parameters - params.keys)
-        elsif is_missing_post_parameters? fitbit_api_method, required_post_parameters, params
-          api_error = post_parameters_error(api_method, required_post_parameters, required_post_parameters - params['post_parameters'].keys)
-        elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
-          api_error = "#{api_method} requires user auth_token and auth_secret."
-        end
-      else
+      if !fitbit_api_method
         api_error = "#{params['api-method']} is not a valid Fitbit API method." 
+      elsif is_missing_required_parameters? fitbit_api_method, params
+        api_error = required_parameters_error(api_method, params.keys)
+      elsif is_missing_post_parameters? fitbit_api_method, params
+        api_error = post_parameters_error(api_method, params['post_parameters'].keys)
+      elsif is_breaking_exclusive_post_parameter_rule? fitbit_api_method, params
+        api_error = "cheese"
+      elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
+        api_error = "#{api_method} requires user auth_token and auth_secret."
       end
-      api_error
     end
 
     def get_lowercase params
@@ -55,21 +51,28 @@ module Fitbit
       @@fitbit_methods.has_key? api_method
     end
 
-    def is_missing_required_parameters? api_method, required_parameters, params
+    def is_missing_required_parameters? api_method, params
+      required_parameters = api_method['required_parameters'] 
       (api_method.has_key? 'required_parameters') && (params.keys & required_parameters != required_parameters)
     end
 
-    def is_missing_post_parameters? api_method, required_post_parameters, params
+    def is_missing_post_parameters? api_method, params
+      required_post_parameters = api_method['post_parameters']
       (api_method.has_key? 'post_parameters') &&
         (params['post_parameters'] == nil || required_post_parameters - params['post_parameters'].keys != [])
     end
 
-    def required_parameters_error api_method, required, missing
-      "#{api_method} requires #{required}. You're missing #{missing}."
+    def is_breaking_exclusive_post_parameter_rule? api_method, params
     end
 
-    def post_parameters_error api_method, required, missing
-      "#{api_method} requires POST Parameters #{required}. You're missing #{missing}."
+    def required_parameters_error api_method, supplied
+      required = @@fitbit_methods[api_method]['required_parameters'] 
+      "#{api_method} requires #{required}. You're missing #{required-supplied}."
+    end
+
+    def post_parameters_error api_method, supplied
+      required = @@fitbit_methods[api_method]['post_parameters']
+      "#{api_method} requires POST Parameters #{required}. You're missing #{required-supplied}."
     end
 
     def build_request consumer_key, consumer_secret, auth_token, auth_secret
@@ -156,6 +159,14 @@ module Fitbit
         'auth_required'       => true,
         'post_parameters'     => ['defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
         'request_headers'     => ['accept-locale']
+      },
+      'api-create-invite' => {
+        'http_method'         => 'post',
+        'resources'           => ['user', '-', 'friends', 'invitations'],
+        'auth_required'       => true,
+        'optional'            => {
+          'post_parameters'       => [ { 'exclusive' => ['invitedUserEmail', 'invitedUserId'] } ]
+        }
       }
     }
 
