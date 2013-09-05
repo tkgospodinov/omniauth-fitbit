@@ -301,14 +301,19 @@ describe Fitbit::Api do
       }
     end
 
-    it 'should create API-Delete-Activity-Log' do
+    it 'should create API-Delete-Activity-Log url' do
       expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
-    it 'should create API-Delete-Activity-Log' do
+    it 'should create API-Delete-Activity-Log OAuth request' do
       stub_request(:delete, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -337,6 +342,11 @@ describe Fitbit::Api do
       expect(api_call.class).to eq(Net::HTTPOK)
     end
 
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
@@ -361,6 +371,11 @@ describe Fitbit::Api do
       stub_request(:delete, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do

@@ -142,73 +142,73 @@ module Fitbit
 
     @@fitbit_methods = {
       'api-search-foods' => {
+        'auth_required'       => false,
         'http_method'         => 'get',
-        'resources'           => ['foods', 'search'],
         'required_parameters' => ['query'],
-        'auth_required'       => false
+        'resources'           => ['foods', 'search'],
       },
       'api-accept-invite' => {
+        'auth_required'       => true,
         'http_method'         => 'post',
-        'resources'           => ['user', '-', 'friends', 'invitations'],
         'post_parameters'     => ['accept'],
         'required_parameters' => ['from-user-id'],
-        'auth_required'       => true
+        'resources'           => ['user', '-', 'friends', 'invitations'],
       },
       'api-add-favorite-activity' => {
+        'auth_required'       => true,
         'http_method'         => 'post',
-        'resources'           => ['user', '-', 'activities', 'favorite'],
         'required_parameters' => ['activity-id'],
-        'auth_required'       => true
+        'resources'           => ['user', '-', 'activities', 'favorite'],
       },
       'api-add-favorite-food' => {
+        'auth_required'       => true,
         'http_method'         => 'post',
-        'resources'           => ['user', '-', 'foods', 'log', 'favorite'],
         'required_parameters' => ['food-id'],
-        'auth_required'       => true
+        'resources'           => ['user', '-', 'foods', 'log', 'favorite'],
       },
       'api-browse-activites' => {
-        'http_method'         => 'get',
-        'resources'           => ['activities'],
         'auth_required'       => false,
-        'request_headers'     => ['accept-locale']
+        'http_method'         => 'get',
+        'request_headers'     => ['accept-locale'],
+        'resources'           => ['activities'],
       },
       'api-config-friends-leaderboard' => {
-        'http_method'         => 'post',
-        'resources'           => ['user', '-', 'friends', 'leaderboard'],
         'auth_required'       => true,
+        'http_method'         => 'post',
         'post_parameters'     => ['hideMeFromLeaderboard'],
-        'request_headers'     => ['accept-language']
+        'request_headers'     => ['accept-language'],
+        'resources'           => ['user', '-', 'friends', 'leaderboard'],
       },
       'api-create-food' => {
-        'http_method'         => 'post',
-        'resources'           => ['foods'],
         'auth_required'       => true,
+        'http_method'         => 'post',
         'post_parameters'     => ['defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
-        'request_headers'     => ['accept-locale']
+        'request_headers'     => ['accept-locale'],
+        'resources'           => ['foods'],
       },
       'api-create-invite' => {
-        'http_method'         => 'post',
-        'resources'           => ['user', '-', 'friends', 'invitations'],
         'auth_required'       => true,
-        'post_parameters'     =>  [['invitedUserEmail', 'invitedUserId']] 
+        'http_method'         => 'post',
+        'post_parameters'     =>  [['invitedUserEmail', 'invitedUserId']],
+        'resources'           => ['user', '-', 'friends', 'invitations'],
       },
       'api-delete-activity-log' => {
+        'auth_required'       => true,
         'http_method'         => 'delete',
-        'resources'           => ['user', '-', 'activities'],
         'required_parameters' => ['activity-log-id'],
-        'auth_required'       => true
+        'resources'           => ['user', '-', 'activities'],
       },
       'api-delete-blood-pressure-log' => {
+        'auth_required'       => true,
         'http_method'         => 'delete',
-        'resources'           => ['user', '-', 'bp'],
         'required_parameters' => ['bp-log-id'],
-        'auth_required'       => true
+        'resources'           => ['user', '-', 'bp'],
       },
       'api-delete-body-fat-log' => {
+        'auth_required'       => true,
         'http_method'         => 'delete',
-        'resources'           => ['user', '-', 'body', 'log', 'fat'],
         'required_parameters' => ['body-fat-log-id'],
-        'auth_required'       => true
+        'resources'           => ['user', '-', 'body', 'log', 'fat'],
       }
     }
 
