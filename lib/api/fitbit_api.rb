@@ -123,10 +123,10 @@ module Fitbit
       !api_format.nil? && api_format.downcase == 'json' ? 'json' : 'xml'
     end
 
-    def add_api_ids api_method, params
+    def add_api_ids api_url_resources, params
       ids = ['from-user-id', 'activity-id', 'food-id', 'activity-log-id', 'bp-log-id', 'body-fat-log-id']
-      ids.each { |x| api_method << "/#{params[x]}" if params.has_key? x }
-      api_method
+      ids.each { |x| api_url_resources << "/#{params[x]}" if params.has_key? x }
+      api_url_resources 
     end
 
     def uri_encode_query query
