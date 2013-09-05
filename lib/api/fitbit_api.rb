@@ -124,7 +124,7 @@ module Fitbit
     end
 
     def add_api_ids api_method, params
-      ids = ['from-user-id', 'activity-id', 'food-id']
+      ids = ['from-user-id', 'activity-id', 'food-id', 'activity-log-id', 'bp-log-id', 'body-fat-log-id']
       ids.each { |x| api_method << "/#{params[x]}" if params.has_key? x }
       api_method
     end
@@ -151,16 +151,19 @@ module Fitbit
         'http_method'         => 'post',
         'resources'           => ['user', '-', 'friends', 'invitations'],
         'post_parameters'     => ['accept'],
+        'required_parameters' => ['from-user-id'],
         'auth_required'       => true
       },
       'api-add-favorite-activity' => {
         'http_method'         => 'post',
         'resources'           => ['user', '-', 'activities', 'favorite'],
+        'required_parameters' => ['activity-id'],
         'auth_required'       => true
       },
       'api-add-favorite-food' => {
         'http_method'         => 'post',
         'resources'           => ['user', '-', 'foods', 'log', 'favorite'],
+        'required_parameters' => ['food-id'],
         'auth_required'       => true
       },
       'api-browse-activites' => {
@@ -187,7 +190,25 @@ module Fitbit
         'http_method'         => 'post',
         'resources'           => ['user', '-', 'friends', 'invitations'],
         'auth_required'       => true,
-        'post_parameters'     =>  [ ['invitedUserEmail', 'invitedUserId'] ] 
+        'post_parameters'     =>  [['invitedUserEmail', 'invitedUserId']] 
+      },
+      'api-delete-activity-log' => {
+        'http_method'         => 'delete',
+        'resources'           => ['user', '-', 'activities'],
+        'required_parameters' => ['activity-log-id'],
+        'auth_required'       => true
+      },
+      'api-delete-blood-pressure-log' => {
+        'http_method'         => 'delete',
+        'resources'           => ['user', '-', 'bp'],
+        'required_parameters' => ['bp-log-id'],
+        'auth_required'       => true
+      },
+      'api-delete-body-fat-log' => {
+        'http_method'         => 'delete',
+        'resources'           => ['user', '-', 'body', 'log', 'fat'],
+        'required_parameters' => ['body-fat-log-id'],
+        'auth_required'       => true
       }
     }
 

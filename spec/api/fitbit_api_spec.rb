@@ -116,6 +116,11 @@ describe Fitbit::Api do
       expect(api_call.class).to eq(Net::HTTPOK)
     end
 
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
@@ -286,6 +291,83 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Delete-Activity-Log method' do
+    before(:each) do
+      @api_method = 'api-delete-activity-log'
+      @api_url = '/1/user/-/activities/12345.xml'
+      @params = {
+        'api-method'      => 'API-Delete-Activity-Log',
+        'activity-log-id' => '12345'
+      }
+    end
+
+    it 'should create API-Delete-Activity-Log' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Delete-Activity-Log' do
+      stub_request(:delete, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Delete-Blood-Pressure-Log method' do
+    before(:each) do
+      @api_method = 'api-delete-blood-pressure-log'
+      @api_url = '/1/user/-/bp/12345.xml'
+      @params = {
+        'api-method'      => 'API-Delete-Blood-Pressure-Log',
+        'bp-log-id' => '12345'
+      }
+    end
+
+    it 'should create API-Delete-Blood-Pressure-Log url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Delete-Blood-Pressure-Log OAuth request' do
+      stub_request(:delete, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Delete-Body-Fat-Log method' do
+    before(:each) do
+      @api_method = 'api-delete-body-fat-log'
+      @api_url = '/1/user/-/body/log/fat/12345.xml'
+      @params = {
+        'api-method'      => 'API-Delete-Body-Fat-Log',
+        'body-fat-log-id' => '12345'
+      }
+    end
+
+    it 'should create API-Delete-Body-Fat-Log url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Delete-Body-Fat-Log OAuth request' do
+      stub_request(:delete, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
 
   context 'API-Search-Foods method' do
     before(:each) do
