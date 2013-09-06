@@ -36,7 +36,12 @@ module Fitbit
       elsif is_breaking_exclusive_post_parameter_rule? fitbit_api_method, params
         api_error = exclusive_post_parameters_error(api_method, params['post_parameters'].keys)
       elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
-        api_error = "#{api_method} requires user auth_token and auth_secret."
+        if fitbit_api_method['auth_required'].is_a? String
+          fitbit_auth = fitbit_api_method['auth_required']
+          api_error = "#{api_method} requires user auth_token and auth_secret, unless you include [\"#{fitbit_auth}\"]." unless params[fitbit_auth]
+        else
+          api_error = "#{api_method} requires user auth_token and auth_secret."
+        end
       end
     end
 
@@ -120,11 +125,14 @@ module Fitbit
       api_ids = fitbit_api_ids.clone if fitbit_api_ids
       api_resources = @@fitbit_methods["#{api_method.downcase}"]['resources']
       api_resources.each do |x|
+        i = api_resources.index(x)
         id = x.delete "<>"
         if api_ids && (api_ids.include? id) && (!api_ids.include? x)
-          i = api_resources.index(x)
           api_resources[i] = params[id]
           api_ids.delete(x)
+        end
+        if x == '-' && fitbit_api_method['auth_required'] == 'user-id'
+          api_resources[i] = params['user-id'] if params['user-id']
         end
       end
       api_method_url = api_resources.join("/")
@@ -293,7 +301,7 @@ module Fitbit
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms', '<alarm-id>'],
       },
       'api-get-activities' => {
-        'auth_required'       => true,
+        'auth_required'       => 'user-id',
         'http_method'         => 'get',
         'request_headers'     => ['accept-locale', 'Accept-Language'],
         'required_parameters' => ['date'],
