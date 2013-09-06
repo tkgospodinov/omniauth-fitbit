@@ -338,6 +338,12 @@ module Fitbit
         'request_headers'     => ['accept-locale'],
         'resources'           => ['user', '-', 'badges'],
       },
+      'api-get-blood-pressure' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'required_parameters' => ['date'],
+        'resources'           => ['user', '-', 'bp', 'date', '<date>'],
+      },
     }
 
   end
