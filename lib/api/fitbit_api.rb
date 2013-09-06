@@ -274,7 +274,7 @@ module Fitbit
       },
       'api-devices-delete-alarm' => {
         'auth_required'       => true,
-        'http_method'         => 'post',
+        'http_method'         => 'delete',
         'required_parameters' => ['device-id', 'alarm-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms', 'alarm-id'],
       },
@@ -283,6 +283,13 @@ module Fitbit
         'http_method'         => 'get',
         'required_parameters' => ['device-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms'],
+      },
+      'api-devices-update-alarm' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays', 'snoozeLength', 'snoozeCount'],
+        'required_parameters' => ['device-id', 'alarm-id'],
+        'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms', 'alarm-id'],
       },
     }
 
