@@ -272,6 +272,13 @@ module Fitbit
         'required_parameters' => ['device-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms'],
       },
+      'api-devices-delete-alarm' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays'],
+        'required_parameters' => ['device-id', 'alarm-id'],
+        'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms', 'alarm-id'],
+      },
     }
 
   end
