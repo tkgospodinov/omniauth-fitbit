@@ -320,6 +320,12 @@ module Fitbit
         'request_headers'     => ['accept-language'],
         'resources'           => ['user', '-', 'activities', 'goals', 'daily'],
       },
+      'api-get-activity-stats' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['accept-language'],
+        'resources'           => ['user', '-', 'activities'],
+      },
     }
 
   end

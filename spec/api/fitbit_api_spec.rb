@@ -852,6 +852,59 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Get-Activity-Stats method' do
+    before(:each) do
+      @api_method = 'api-get-activity-stats' 
+      @api_url = '/1/user/-/activities.xml'
+      @params = {
+        'api-method'      => 'API-Get-Activity-Stats',
+        'request_headers' => { 
+          'Accept-Language' => 'en_US',
+        }
+      }
+    end
+
+    it 'should create API-Get-Activity-Stats url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Activity-Stats OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Activity-Stats method with _user-id_ instead of auth tokens' do
+    before(:each) do
+      @api_method = 'api-get-activity-stats' 
+      @api_url = '/1/user/12131415/activities.xml'
+      @params = {
+        'api-method'      => 'API-Get-Activity-Stats',
+        'user-id'     => '12131415',
+        'request_headers' => { 
+          'Accept-Language' => 'en_US',
+        }
+      }
+    end
+
+    it 'should create API-Get-Activity-Stats url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Activity-Stats OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+  end
+
+
 
 
   context 'API-Search-Foods method' do
