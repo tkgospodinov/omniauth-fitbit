@@ -12,7 +12,7 @@ module Fitbit
     def build_url api_version, params
       api_url_resources = get_url_resources(params['api-method'])
       api_format = get_response_format(params['response-format'])
-      api_ids = add_api_ids(api_url_resources, params) if @@fitbit_methods[params['api-method']]['required_parameters']
+      api_ids = add_api_ids(api_url_resources, params)
       api_query = uri_encode_query(params['query']) 
       request_url = "/#{api_version}/#{api_ids}.#{api_format}#{api_query}"
     end
@@ -124,8 +124,11 @@ module Fitbit
     end
 
     def add_api_ids api_url_resources, params
-      ids = ['from-user-id', 'activity-id', 'food-id', 'activity-log-id', 'bp-log-id', 'body-fat-log-id']
-      ids.each { |x| api_url_resources << "/#{params[x]}" if params.has_key? x }
+      api_method = params['api-method']
+      fitbit_api_method = @@fitbit_methods["#{api_method.downcase}"]
+      ids = fitbit_api_method['required_parameters']  
+      no_query = ids.reject { |x| x == 'query' } if ids
+      no_query.each { |x| api_url_resources << "/#{params[x]}" if params.has_key? x } if ids
       api_url_resources 
     end
 
@@ -209,7 +212,25 @@ module Fitbit
         'http_method'         => 'delete',
         'required_parameters' => ['body-fat-log-id'],
         'resources'           => ['user', '-', 'body', 'log', 'fat'],
-      }
+      },
+      'api-delete-body-weight-log' => {
+        'auth_required'       => true,
+        'http_method'         => 'delete',
+        'required_parameters' => ['body-weight-log-id'],
+        'resources'           => ['user', '-', 'body', 'log', 'weight'],
+      },
+      'api-delete-favorite-activity' => {
+        'auth_required'       => true,
+        'http_method'         => 'delete',
+        'required_parameters' => ['activity-id'],
+        'resources'           => ['user', '-', 'activities', 'favorite'],
+      },
+      'api-add-favorite-food' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'required_parameters' => ['food-id'],
+        'resources'           => ['user', '-', 'foods', 'log', 'favorite'],
+      },
     }
 
   end
