@@ -307,6 +307,13 @@ module Fitbit
         'required_parameters' => ['date'],
         'resources'           => ['user', '-', 'activities', 'date', '<date>'],
       },
+      'api-get-activity' => {
+        'auth_required'       => false,
+        'http_method'         => 'get',
+        'request_headers'     => ['accept-locale', 'Accept-Language'],
+        'required_parameters' => ['activity-id'],
+        'resources'           => ['activities', '<activity-id>'],
+      },
     }
 
   end

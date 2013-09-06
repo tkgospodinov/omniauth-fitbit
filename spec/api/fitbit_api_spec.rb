@@ -741,6 +741,10 @@ describe Fitbit::Api do
       @params = {
         'api-method'      => 'API-Get-Activities',
         'date'     => '2012-12-12',
+        'request_headers' => { 
+          'Accept-Locale'   => 'en_US',
+          'Accept-Language' => 'en_US',
+        }
       }
     end
 
@@ -773,6 +777,10 @@ describe Fitbit::Api do
         'api-method'      => 'API-Get-Activities',
         'date'     => '2012-12-12',
         'user-id'   => '1337',
+        'request_headers' => { 
+          'Accept-Locale'   => 'en_US',
+          'Accept-Language' => 'en_US',
+        }
       }
     end
 
@@ -781,6 +789,35 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activities OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Activity method' do
+    before(:each) do
+      @api_method = 'api-get-activity' 
+      @api_url = '/1/activities/8675309.xml'
+      @params = {
+        'api-method'      => 'API-Get-Activity',
+        'activity-id'     => '8675309',
+        'request_headers' => { 
+          'Accept-Locale'   => 'en_US',
+        }
+      }
+    end
+
+    it 'should create API-Get-Activity url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Activity OAuth request' do
       stub_request(:get, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
