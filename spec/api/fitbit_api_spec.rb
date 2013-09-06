@@ -446,6 +446,58 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Delete-Favorite-Food method' do
+    before(:each) do
+      @api_method = 'api-delete-favorite-food'
+      @api_url = '/1/user/-/foods/log/favorite/12345.xml'
+      @params = {
+        'api-method'      => 'API-Delete-Favorite-Food',
+        'food-id'         => '12345'
+      }
+    end
+
+    it 'should create API-Delete-Favorite-Food url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Delete-Favorite-Food OAuth request' do
+      stub_request(:delete, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Delete-Food-Log method' do
+    before(:each) do
+      @api_method = 'api-delete-food-log'
+      @api_url = '/1/user/-/foods/log/12345.xml'
+      @params = {
+        'api-method'      => 'API-Delete-Food-Log',
+        'food-log-id'         => '12345'
+      }
+    end
+
+    it 'should create API-Delete-Food-Log url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Delete-Food-Log OAuth request' do
+      stub_request(:delete, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
 
   context 'API-Search-Foods method' do
     before(:each) do

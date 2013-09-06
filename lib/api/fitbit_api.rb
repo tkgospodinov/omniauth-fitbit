@@ -225,11 +225,17 @@ module Fitbit
         'required_parameters' => ['activity-id'],
         'resources'           => ['user', '-', 'activities', 'favorite'],
       },
-      'api-add-favorite-food' => {
+      'api-delete-favorite-food' => {
         'auth_required'       => true,
-        'http_method'         => 'post',
+        'http_method'         => 'delete',
         'required_parameters' => ['food-id'],
         'resources'           => ['user', '-', 'foods', 'log', 'favorite'],
+      },
+      'api-delete-food-log' => {
+        'auth_required'       => true,
+        'http_method'         => 'delete',
+        'required_parameters' => ['food-log-id'],
+        'resources'           => ['user', '-', 'foods', 'log'],
       },
     }
 
