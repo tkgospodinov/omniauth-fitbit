@@ -243,6 +243,12 @@ module Fitbit
         'required_parameters' => ['heart-log-id'],
         'resources'           => ['user', '-', 'heart'],
       },
+      'api-delete-sleep-log' => {
+        'auth_required'       => true,
+        'http_method'         => 'delete',
+        'required_parameters' => ['sleep-log-id'],
+        'resources'           => ['user', '-', 'sleep'],
+      },
     }
 
   end
