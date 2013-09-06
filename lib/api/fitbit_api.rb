@@ -249,6 +249,12 @@ module Fitbit
         'required_parameters' => ['sleep-log-id'],
         'resources'           => ['user', '-', 'sleep'],
       },
+      'api-delete-water-log' => {
+        'auth_required'       => true,
+        'http_method'         => 'delete',
+        'required_parameters' => ['water-log-id'],
+        'resources'           => ['user', '-', 'foods', 'log', 'water'],
+      },
     }
 
   end
