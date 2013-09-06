@@ -303,16 +303,22 @@ module Fitbit
       'api-get-activities' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
-        'request_headers'     => ['accept-locale', 'Accept-Language'],
+        'request_headers'     => ['accept-locale', 'accept-language'],
         'required_parameters' => ['date'],
         'resources'           => ['user', '-', 'activities', 'date', '<date>'],
       },
       'api-get-activity' => {
         'auth_required'       => false,
         'http_method'         => 'get',
-        'request_headers'     => ['accept-locale', 'Accept-Language'],
+        'request_headers'     => ['accept-locale', 'accept-language'],
         'required_parameters' => ['activity-id'],
         'resources'           => ['activities', '<activity-id>'],
+      },
+      'api-get-activity-daily-goals' => {
+        'auth_required'       => false,
+        'http_method'         => 'get',
+        'request_headers'     => ['accept-language'],
+        'resources'           => ['user', '-', 'activities', 'goals', 'daily'],
       },
     }
 

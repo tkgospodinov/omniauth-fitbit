@@ -829,6 +829,30 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Get-Activity-Daily-Goals method' do
+    before(:each) do
+      @api_method = 'api-get-activity-daily-goals' 
+      @api_url = '/1/user/-/activities/goals/daily.xml'
+      @params = {
+        'api-method'      => 'API-Get-Activity-Daily-Goals',
+        'request_headers' => { 
+          'Accept-Language'   => 'en_US',
+        }
+      }
+    end
+
+    it 'should create API-Get-Activity-Daily-Goals url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Activity-Daily-Goals OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+  end
+
+
 
   context 'API-Search-Foods method' do
     before(:each) do
