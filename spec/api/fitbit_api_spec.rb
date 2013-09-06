@@ -631,16 +631,6 @@ describe Fitbit::Api do
         'api-method'      => 'API-Devices-Delete-Alarm',
         'device-id'     => '8675309',
         'alarm-id'     => '1800555',
-        'post_parameters' => { 
-          'time'            => '10:00',
-          'enabled'         => 'true',
-          'recurring'       => 'true',
-          'weekDays'        => '(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)',
-          'label'           => 'test alarm',
-          'snoozeLength'    => '10',
-          'snoozeCount'     => '2',
-          'vibe'            => 'DEFAULT',
-        },
       }
     end
 
@@ -654,9 +644,35 @@ describe Fitbit::Api do
       expect(api_call.class).to eq(Net::HTTPOK)
     end
 
-    it 'should return a helpful error if required POST Parameters are missing' do
-      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Devices-Get-Alarms method' do
+    before(:each) do
+      @api_method = 'api-devices-get-alarms' 
+      @api_url = '/1/user/-/devices/tracker/8675309/alarms.xml'
+      @params = {
+        'api-method'      => 'API-Devices-Get-Alarms',
+        'device-id'     => '8675309',
+      }
+    end
+
+    it 'should create API-Devices-Get-Alarms' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Devices-Get-Alarms OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
     end
 
     it 'should return a helpful error if required parameters are missing' do
