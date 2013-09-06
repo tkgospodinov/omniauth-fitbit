@@ -850,6 +850,11 @@ describe Fitbit::Api do
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
   end
 
   context 'API-Get-Activity-Stats method' do
@@ -898,6 +903,86 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Stats OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+  end
+
+  context 'API-Get-Activity-Weekly-Goals method' do
+    before(:each) do
+      @api_method = 'api-get-activity-weekly-goals' 
+      @api_url = '/1/user/-/activities/goals/weekly.xml'
+      @params = {
+        'api-method'      => 'API-Get-Activity-Weekly-Goals',
+        'request_headers' => { 
+          'Accept-Language' => 'en_US',
+        }
+      }
+    end
+
+    it 'should create API-Get-Activity-Weekly-Goals url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Activity-Weekly-Goals OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Badges method' do
+    before(:each) do
+      @api_method = 'api-get-badges' 
+      @api_url = '/1/user/-/badges.xml'
+      @params = {
+        'api-method'      => 'API-Get-Badges',
+        'request_headers' => { 
+          'Accept-Locale'   => 'en_US',
+        }
+      }
+    end
+
+    it 'should create API-Get-Badges url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Badges OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Badges method with _user-id_ instead of auth tokens' do
+    before(:each) do
+      @api_method = 'api-get-activities' 
+      @api_url = '/1/user/1337/badges.xml'
+      @params = {
+        'api-method'      => 'API-Get-Badges',
+        'user-id'   => '1337',
+        'request_headers' => { 
+          'Accept-Locale'   => 'en_US',
+        }
+      }
+    end
+
+    it 'should create API-Get-Badges url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Badges OAuth request' do
       stub_request(:get, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)

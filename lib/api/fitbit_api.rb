@@ -315,7 +315,7 @@ module Fitbit
         'resources'           => ['activities', '<activity-id>'],
       },
       'api-get-activity-daily-goals' => {
-        'auth_required'       => false,
+        'auth_required'       => true,
         'http_method'         => 'get',
         'request_headers'     => ['accept-language'],
         'resources'           => ['user', '-', 'activities', 'goals', 'daily'],
@@ -325,6 +325,18 @@ module Fitbit
         'http_method'         => 'get',
         'request_headers'     => ['accept-language'],
         'resources'           => ['user', '-', 'activities'],
+      },
+      'api-get-activity-weekly-goals' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['accept-language'],
+        'resources'           => ['user', '-', 'activities', 'goals', 'weekly'],
+      },
+      'api-get-badges' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['accept-locale'],
+        'resources'           => ['user', '-', 'badges'],
       },
     }
 
