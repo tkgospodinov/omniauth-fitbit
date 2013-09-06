@@ -120,9 +120,10 @@ module Fitbit
       api_ids = fitbit_api_ids.clone if fitbit_api_ids
       api_resources = @@fitbit_methods["#{api_method.downcase}"]['resources']
       api_resources.each do |x|
-        if api_ids && (api_ids.include? x)
+        id = x.delete "<>"
+        if api_ids && (api_ids.include? id) && (!api_ids.include? x)
           i = api_resources.index(x)
-          api_resources[i] = params[x]
+          api_resources[i] = params[id]
           api_ids.delete(x)
         end
       end
@@ -165,19 +166,19 @@ module Fitbit
         'http_method'         => 'post',
         'post_parameters'     => ['accept'],
         'required_parameters' => ['from-user-id'],
-        'resources'           => ['user', '-', 'friends', 'invitations', 'from-user-id'],
+        'resources'           => ['user', '-', 'friends', 'invitations', '<from-user-id>'],
       },
       'api-add-favorite-activity' => {
         'auth_required'       => true,
         'http_method'         => 'post',
         'required_parameters' => ['activity-id'],
-        'resources'           => ['user', '-', 'activities', 'favorite', 'activity-id'],
+        'resources'           => ['user', '-', 'activities', 'favorite', '<activity-id>'],
       },
       'api-add-favorite-food' => {
         'auth_required'       => true,
         'http_method'         => 'post',
         'required_parameters' => ['food-id'],
-        'resources'           => ['user', '-', 'foods', 'log', 'favorite', 'food-id'],
+        'resources'           => ['user', '-', 'foods', 'log', 'favorite', '<food-id>'],
       },
       'api-browse-activites' => {
         'auth_required'       => false,
@@ -209,87 +210,94 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['activity-log-id'],
-        'resources'           => ['user', '-', 'activities', 'activity-log-id'],
+        'resources'           => ['user', '-', 'activities', '<activity-log-id>'],
       },
       'api-delete-blood-pressure-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['bp-log-id'],
-        'resources'           => ['user', '-', 'bp', 'bp-log-id'],
+        'resources'           => ['user', '-', 'bp', '<bp-log-id>'],
       },
       'api-delete-body-fat-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['body-fat-log-id'],
-        'resources'           => ['user', '-', 'body', 'log', 'fat', 'body-fat-log-id'],
+        'resources'           => ['user', '-', 'body', 'log', 'fat', '<body-fat-log-id>'],
       },
       'api-delete-body-weight-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['body-weight-log-id'],
-        'resources'           => ['user', '-', 'body', 'log', 'weight', 'body-weight-log-id'],
+        'resources'           => ['user', '-', 'body', 'log', 'weight', '<body-weight-log-id>'],
       },
       'api-delete-favorite-activity' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['activity-id'],
-        'resources'           => ['user', '-', 'activities', 'favorite', 'activity-id'],
+        'resources'           => ['user', '-', 'activities', 'favorite', '<activity-id>'],
       },
       'api-delete-favorite-food' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['food-id'],
-        'resources'           => ['user', '-', 'foods', 'log', 'favorite', 'food-id'],
+        'resources'           => ['user', '-', 'foods', 'log', 'favorite', '<food-id>'],
       },
       'api-delete-food-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['food-log-id'],
-        'resources'           => ['user', '-', 'foods', 'log', 'food-log-id'],
+        'resources'           => ['user', '-', 'foods', 'log', '<food-log-id>'],
       },
       'api-delete-heart-rate-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['heart-log-id'],
-        'resources'           => ['user', '-', 'heart', 'heart-log-id'],
+        'resources'           => ['user', '-', 'heart', '<heart-log-id>'],
       },
       'api-delete-sleep-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['sleep-log-id'],
-        'resources'           => ['user', '-', 'sleep', 'sleep-log-id'],
+        'resources'           => ['user', '-', 'sleep', '<sleep-log-id>'],
       },
       'api-delete-water-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['water-log-id'],
-        'resources'           => ['user', '-', 'foods', 'log', 'water', 'water-log-id'],
+        'resources'           => ['user', '-', 'foods', 'log', 'water', '<water-log-id>'],
       },
       'api-devices-add-alarm' => {
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays'],
         'required_parameters' => ['device-id'],
-        'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms'],
+        'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms'],
       },
       'api-devices-delete-alarm' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
         'required_parameters' => ['device-id', 'alarm-id'],
-        'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms', 'alarm-id'],
+        'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms', '<alarm-id>'],
       },
       'api-devices-get-alarms' => {
         'auth_required'       => true,
         'http_method'         => 'get',
         'required_parameters' => ['device-id'],
-        'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms'],
+        'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms'],
       },
       'api-devices-update-alarm' => {
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays', 'snoozeLength', 'snoozeCount'],
         'required_parameters' => ['device-id', 'alarm-id'],
-        'resources'           => ['user', '-', 'devices', 'tracker', 'device-id', 'alarms', 'alarm-id'],
+        'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms', '<alarm-id>'],
+      },
+      'api-get-activities' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['accept-locale', 'Accept-Language'],
+        'required_parameters' => ['date'],
+        'resources'           => ['user', '-', 'activities', 'date', '<date>'],
       },
     }
 
