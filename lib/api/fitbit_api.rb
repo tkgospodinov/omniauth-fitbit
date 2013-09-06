@@ -237,6 +237,12 @@ module Fitbit
         'required_parameters' => ['food-log-id'],
         'resources'           => ['user', '-', 'foods', 'log'],
       },
+      'api-delete-heart-rate-log' => {
+        'auth_required'       => true,
+        'http_method'         => 'delete',
+        'required_parameters' => ['heart-log-id'],
+        'resources'           => ['user', '-', 'heart'],
+      },
     }
 
   end
