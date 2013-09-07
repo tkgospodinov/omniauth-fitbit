@@ -1046,7 +1046,23 @@ describe Fitbit::Api do
       }
     end
 
-    it 'should create API-Get-Body-Fat url' do
+    it 'should create API-Get-Body-Fat <date> url' do
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Fat <base-date>/<end-date> url' do
+      @api_url = '/1/user/-/body/log/fat/date/2014-09-09/2014-12-31.xml'
+      @params.delete('date')
+      @params['base-date'] = '2014-09-09'
+      @params['end-date'] = '2014-12-31'
+      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Fat <base-date>/<period> url' do
+      @api_url = '/1/user/-/body/log/fat/date/2014-09-09/2014-12-31.xml'
+      @params.delete('date')
+      @params['base-date'] = '2014-09-09'
+      @params['period'] = '2014-12-31'
       expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 

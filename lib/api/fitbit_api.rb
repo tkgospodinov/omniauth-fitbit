@@ -143,7 +143,8 @@ module Fitbit
     def get_url_resources params
       api_method = params['api-method'].downcase
       fitbit_api_method = @@fitbit_methods[api_method]
-      api_ids = get_api_ids(fitbit_api_method)
+      dynamic_resources = fitbit_api_method['required_parameters']
+      api_ids = get_required_parameters(dynamic_resources, params) 
       resources = fitbit_api_method['resources']
       api_resources = get_required_parameters(resources, params)
 
@@ -159,10 +160,6 @@ module Fitbit
         end
       end
       api_method_url = api_resources.join("/")
-    end
-
-    def get_api_ids fitbit_api_method
-      fitbit_api_ids = fitbit_api_method['required_parameters']  
     end
 
     def get_response_format api_format
@@ -367,11 +364,13 @@ module Fitbit
         'http_method'         => 'get',
         'required_parameters' => {
           'date'      => ['date'],
-          'period'    => ['base-date', 'period'],
           'end-date'  => ['base-date', 'end-date'],
+          'period'    => ['base-date', 'period'],
         },
         'resources'           => {
           'date'      => ['user', '-', 'body', 'log', 'fat', 'date', '<date>'],
+          'end-date'  => ['user', '-', 'body', 'log', 'fat', 'date', '<base-date>', '<end-date>'],
+          'period'    => ['user', '-', 'body', 'log', 'fat', 'date', '<base-date>', '<period>'],
         }
       },
     }
