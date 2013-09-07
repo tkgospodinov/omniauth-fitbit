@@ -5,8 +5,9 @@ describe Fitbit::Api do
     Fitbit::Api.new({})
   end
 
-  def helpful_errors api_method, data_type, supplied_data
-    required_data = get_required_data(api_method, data_type)
+  def helpful_errors api_method, data_type, supplied
+    required = get_required_data(api_method, data_type)
+    required_data = get_required_parameters(required, supplied)
     missing_data = delete_required_data(required_data, data_type)
     case data_type
     when 'post_parameters'
@@ -24,6 +25,15 @@ describe Fitbit::Api do
 
   def get_required_data api_method, data_type
     @fitbit_methods[api_method][data_type]
+  end
+
+  def get_required_parameters required, supplied
+    if required.is_a? Hash
+      required.keys.each do |x|
+        return required[x] if supplied.include? x
+      end
+    end
+    required
   end
 
   def get_exclusive_data api_method, data_type

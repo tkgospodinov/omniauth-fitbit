@@ -13,7 +13,7 @@ module Fitbit
       api_url_resources = get_url_resources(params)
       api_format = get_response_format(params['response-format'])
       api_query = uri_encode_query(params['query']) 
-      request_url = "/#{api_version}/#{api_url_resources }.#{api_format}#{api_query}"
+      request_url = "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}"
     end
 
     def get_fitbit_methods
@@ -58,26 +58,13 @@ module Fitbit
     def is_missing_required_parameters? fitbit_api_method, params
       required = fitbit_api_method['required_parameters'] 
       required_parameters = get_required_parameters(required, params)
-      (fitbit_api_method.has_key? 'required_parameters') && (params.keys & required_parameters != required_parameters)
-    end
-
-    def get_resources required_parameters, api_ids
-      if required_parameters.is_a? Hash
-        required_parameters_hash = required_parameters.keys 
-        api_resources = api_ids.keys
-        required_parameters_hash.each do |x| 
-          required_parameters = required_parameters[x] if api_resources.include? x 
-        end
-      end
-      required_parameters
+      (required) && ((required_parameters.is_a? Hash) || (params.keys & required_parameters != required_parameters))
     end
 
     def get_required_parameters required_parameters, params
       if required_parameters.is_a? Hash
-        required_parameters_hash = required_parameters.keys 
-        api_resources = params.keys
-        required_parameters_hash.each do |x| 
-          required_parameters = required_parameters[x] if api_resources.include? x 
+        required_parameters.keys.each do |x| 
+          return required_parameters[x] if params.keys.include? x 
         end
       end
       required_parameters
@@ -111,7 +98,16 @@ module Fitbit
 
     def required_parameters_error api_method, supplied
       required = @@fitbit_methods[api_method]['required_parameters'] 
-      "#{api_method} requires #{required}. You're missing #{required-supplied}."
+      if required.is_a? Hash
+        error = ""
+        required.keys.each do |x|
+          error << "#{api_method} requires #{required[x]}. You're missing #{required[x]-supplied}.\n"
+        end
+        error
+      else
+        error = "#{api_method} requires #{required}. You're missing #{required-supplied}."
+      end
+      error
     end
 
     def post_parameters_error api_method, supplied
