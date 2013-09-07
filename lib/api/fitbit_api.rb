@@ -55,9 +55,32 @@ module Fitbit
       @@fitbit_methods.has_key? api_method
     end
 
-    def is_missing_required_parameters? api_method, params
-      required_parameters = api_method['required_parameters'] 
-      (api_method.has_key? 'required_parameters') && (params.keys & required_parameters != required_parameters)
+    def is_missing_required_parameters? fitbit_api_method, params
+      required = fitbit_api_method['required_parameters'] 
+      required_parameters = get_required_parameters(required, params)
+      (fitbit_api_method.has_key? 'required_parameters') && (params.keys & required_parameters != required_parameters)
+    end
+
+    def get_resources required_parameters, api_ids
+      if required_parameters.is_a? Hash
+        required_parameters_hash = required_parameters.keys 
+        api_resources = api_ids.keys
+        required_parameters_hash.each do |x| 
+          required_parameters = required_parameters[x] if api_resources.include? x 
+        end
+      end
+      required_parameters
+    end
+
+    def get_required_parameters required_parameters, params
+      if required_parameters.is_a? Hash
+        required_parameters_hash = required_parameters.keys 
+        api_resources = params.keys
+        required_parameters_hash.each do |x| 
+          required_parameters = required_parameters[x] if api_resources.include? x 
+        end
+      end
+      required_parameters
     end
 
     def is_missing_post_parameters? api_method, params
@@ -119,11 +142,12 @@ module Fitbit
     end
 
     def get_url_resources params
-      api_method = params['api-method']
-      fitbit_api_method = @@fitbit_methods["#{api_method.downcase}"]
-      fitbit_api_ids = fitbit_api_method['required_parameters']  
-      api_ids = fitbit_api_ids.clone if fitbit_api_ids
-      api_resources = @@fitbit_methods["#{api_method.downcase}"]['resources']
+      api_method = params['api-method'].downcase
+      fitbit_api_method = @@fitbit_methods[api_method]
+      api_ids = get_api_ids(fitbit_api_method)
+      resources = fitbit_api_method['resources']
+      api_resources = get_required_parameters(resources, params)
+
       api_resources.each do |x|
         i = api_resources.index(x)
         id = x.delete "<>"
@@ -138,17 +162,12 @@ module Fitbit
       api_method_url = api_resources.join("/")
     end
 
-    def get_response_format api_format
-      !api_format.nil? && api_format.downcase == 'json' ? 'json' : 'xml'
+    def get_api_ids fitbit_api_method
+      fitbit_api_ids = fitbit_api_method['required_parameters']  
     end
 
-    def add_api_ids api_url_resources, params
-      api_method = params['api-method']
-      fitbit_api_method = @@fitbit_methods["#{api_method.downcase}"]
-      ids = fitbit_api_method['required_parameters']  
-      no_query = ids.reject { |x| x == 'query' } if ids
-      no_query.each { |x| api_url_resources << "/#{params[x]}" if params.has_key? x } if ids
-      api_url_resources 
+    def get_response_format api_format
+      !api_format.nil? && api_format.downcase == 'json' ? 'json' : 'xml'
     end
 
     def uri_encode_query query
@@ -343,6 +362,18 @@ module Fitbit
         'http_method'         => 'get',
         'required_parameters' => ['date'],
         'resources'           => ['user', '-', 'bp', 'date', '<date>'],
+      },
+      'api-get-body-fat' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'required_parameters' => {
+          'date'      => ['date'],
+          'period'    => ['base-date', 'period'],
+          'end-date'  => ['base-date', 'end-date'],
+        },
+        'resources'           => {
+          'date'      => ['user', '-', 'body', 'log', 'fat', 'date', '<date>'],
+        }
       },
     }
 
