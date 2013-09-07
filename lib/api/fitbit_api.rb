@@ -100,9 +100,11 @@ module Fitbit
     def required_parameters_error api_method, supplied
       required = @@fitbit_methods[api_method]['required_parameters'] 
       if required.is_a? Hash
-        error = "#{api_method} supports the following #{required.length} options:\n"
+        count = 1
+        error = "#{api_method} requires 1 of #{required.length} options: "
         required.keys.each do |x|
-          error << "#{api_method} requires #{required[x]}. You're missing #{required[x]-supplied}.\n"
+          error << "(#{count}) #{required[x]} "
+          count += 1
         end
       else
         error = "#{api_method} requires #{required}. You're missing #{required-supplied}."

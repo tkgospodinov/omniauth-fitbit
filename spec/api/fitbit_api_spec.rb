@@ -17,7 +17,7 @@ describe Fitbit::Api do
       extra_data = get_extra_data(exclusive_data)
       "#{api_method} allows only one of these POST Parameters #{exclusive_data}. You used #{extra_data}."
     when 'required_parameters'
-      "#{api_method} requires #{required_data}. You're missing #{missing_data}."
+      get_required_parameters_error(api_method, required, required_data, missing_data)
     else
       "#{api_method} is not a valid error type."
     end
@@ -34,6 +34,20 @@ describe Fitbit::Api do
       end
     end
     required
+  end
+
+  def get_required_parameters_error api_method, required, required_data, missing_data
+    if required.is_a? Hash
+      count = 1
+      error = "#{api_method} requires 1 of #{required.length} options: "
+      required.keys.each do |x|
+        error << "(#{count}) #{required[x]} "
+        count += 1
+      end
+    else
+      error = "#{api_method} requires #{required_data}. You're missing #{missing_data}."
+    end
+    error
   end
 
   def get_exclusive_data api_method, data_type
