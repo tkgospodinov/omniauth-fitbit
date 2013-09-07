@@ -31,10 +31,10 @@ module Fitbit
         api_error = "#{params['api-method']} is not a valid Fitbit API method." 
       elsif is_missing_required_parameters? fitbit_api_method, params
         api_error = required_parameters_error(api_method, params.keys)
-      elsif is_missing_post_parameters? fitbit_api_method, params
-        api_error = post_parameters_error(api_method, params['post_parameters'].keys)
-      elsif is_breaking_exclusive_post_parameter_rule? fitbit_api_method, params
-        api_error = exclusive_post_parameters_error(api_method, params['post_parameters'].keys)
+      elsif is_missing_post_parameters? fitbit_api_method, params.keys
+        api_error = post_parameters_error(api_method, params.keys)
+      elsif is_breaking_exclusive_post_parameter_rule? fitbit_api_method, params.keys
+        api_error = exclusive_post_parameters_error(api_method, params.keys)
       elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
         if fitbit_api_method['auth_required'].is_a? String
           fitbit_auth = fitbit_api_method['auth_required']
@@ -46,8 +46,8 @@ module Fitbit
     end
 
     def get_lowercase params
-      api_strings = Hash[params.map { |k,v| [k.downcase, v.downcase] if v.is_a? String }]
-      api_parameters_and_headers = Hash[params.map { |k,v| [k.downcase, v] if !v.is_a? String }]
+      api_strings = Hash[params.map { |k,v| [k, v.downcase] if k == 'api-method' }]
+      api_parameters_and_headers = Hash[params.map { |k,v| [k, v] if k != 'api-method' }]
       api_strings.merge(api_parameters_and_headers)
     end
     
@@ -70,19 +70,20 @@ module Fitbit
       required_parameters
     end
 
-    def is_missing_post_parameters? api_method, params
-      required_post_parameters = api_method['post_parameters'].select { |x| !x.is_a? Array } if api_method['post_parameters']
-      supplied_post_parameters = params['post_parameters']
+    def is_missing_post_parameters? fitbit_api_method, supplied_parameters
+      if fitbit_api_method['post_parameters'] 
+        required_post_parameters = fitbit_api_method['post_parameters'].select { |x| !x.is_a? Array } 
+      end
       (required_post_parameters) &&
-        (!params['post_parameters'] || required_post_parameters - supplied_post_parameters.keys != [])
+        (required_post_parameters & supplied_parameters != required_post_parameters)
     end
 
     def is_breaking_exclusive_post_parameter_rule? api_method, params
       exclusive_post_parameters = get_exclusive_post_parameters api_method
-      supplied_post_parameters = params['post_parameters']
+      supplied_post_parameters = params
       count = 0
       if exclusive_post_parameters && supplied_post_parameters
-        supplied_post_parameters.keys.each do |parameter|
+        supplied_post_parameters.each do |parameter|
           count +=1 if exclusive_post_parameters.include? parameter
         end
       end
@@ -116,8 +117,9 @@ module Fitbit
 
     def exclusive_post_parameters_error api_method, supplied
       exclusive_post_parameters = get_exclusive_post_parameters @@fitbit_methods[api_method]
-      all_supplied = supplied.map { |data| "'#{data}'" }.join(' AND ')
-      "#{api_method} allows only one of these POST Parameters #{exclusive_post_parameters}. You used #{all_supplied}."
+      all_supplied = exclusive_post_parameters & supplied
+      all_supplied_string = all_supplied.map { |data| "'#{data}'" }.join(' AND ')
+      "#{api_method} allows only one of these POST Parameters #{exclusive_post_parameters}. You used #{all_supplied_string}."
     end
 
     def build_request consumer_key, consumer_secret, auth_token, auth_secret

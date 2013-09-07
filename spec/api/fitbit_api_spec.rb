@@ -46,12 +46,12 @@ describe Fitbit::Api do
     if data_type == 'required_parameters'
       required_data.each { |parameter| @params.delete(parameter) }
     elsif data_type == 'post_parameters'
-      required_data.each { |parameter| @params[data_type].delete(parameter) unless parameter.is_a? Array }
+      required_data.each { |parameter| @params.delete(parameter) unless parameter.is_a? Array }
     end
   end
 
   def get_extra_data exclusive_data
-    extra_data = exclusive_data.each { |exclusive| @params['post_parameters'][exclusive] = 'cheese' } if exclusive_data
+    extra_data = exclusive_data.each { |exclusive| @params[exclusive] = 'cheese' } if exclusive_data
     extra_data.map { |data| "'#{data}'" }.join(' AND ')
   end
 
@@ -81,7 +81,7 @@ describe Fitbit::Api do
       @params = {
         'api-method' => 'API-Accept-Invite',
         'from-user-id' => 'r2d2c3p0',
-        'post_parameters' => { 'accept' => 'true' }
+        'accept' => 'true' 
       }
     end
 
@@ -190,7 +190,7 @@ describe Fitbit::Api do
       @api_url = '/1/user/-/friends/leaderboard.xml'
       @params = {
         'api-method'      => 'API-Config-Friends-Leaderboard',
-        'post_parameters' => { 'hideMeFromLeaderboard' => 'true' },
+        'hideMeFromLeaderboard' => 'true',
         'request_headers' => { 'Accept-Language' => 'en_US' }
       }
       
@@ -228,13 +228,11 @@ describe Fitbit::Api do
       @api_url = '/1/foods.xml'
       @params = {
         'api-method'      => 'API-Create-Food',
-        'post_parameters' => { 
-          'defaultFoodMeasurementUnitId'  => '1',
-          'defaultServingSize'            => '1',
-          'calories'                      => '1000',
-          'formType'                      => 'LIQUID',
-          'description'                   => 'Say something here about the new food'
-        },
+        'defaultFoodMeasurementUnitId'  => '1',
+        'defaultServingSize'            => '1',
+        'calories'                      => '1000',
+        'formType'                      => 'LIQUID',
+        'description'                   => 'Say something here about the new food',
         'request_headers' => { 'Accept-Locale' => 'en_US' }
       }
     end
@@ -270,9 +268,7 @@ describe Fitbit::Api do
       @api_url = '/1/user/-/friends/invitations.xml'
       @params = {
         'api-method'      => 'API-Create-Invite',
-        'post_parameters' => { 
-          'invitedUserEmail'              => 'email@email.com'
-        }
+        'invitedUserEmail'              => 'email@email.com',
       }
     end
 
@@ -593,16 +589,14 @@ describe Fitbit::Api do
       @params = {
         'api-method'      => 'API-Devices-Add-Alarm',
         'device-id'     => '8675309',
-        'post_parameters' => { 
-          'time'            => '10:00',
-          'enabled'         => 'true',
-          'recurring'       => 'true',
-          'weekDays'        => '(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)',
-          'label'           => 'test alarm',
-          'snoozeLength'    => '10',
-          'snoozeCount'     => '2',
-          'vibe'            => 'DEFAULT',
-        },
+        'time'            => '10:00',
+        'enabled'         => 'true',
+        'recurring'       => 'true',
+        'weekDays'        => '(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)',
+        'label'           => 'test alarm',
+        'snoozeLength'    => '10',
+        'snoozeCount'     => '2',
+        'vibe'            => 'DEFAULT',
         'request_headers' => { 'Accept-Language' => 'en_US' }
       }
     end
@@ -704,16 +698,14 @@ describe Fitbit::Api do
         'api-method'      => 'API-Devices-Update-Alarm',
         'device-id'     => '8675309',
         'alarm-id'     => '1800555',
-        'post_parameters' => { 
-          'time'            => '10:00',
-          'enabled'         => 'true',
-          'recurring'       => 'true',
-          'weekDays'        => '(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)',
-          'label'           => 'test alarm',
-          'snoozeLength'    => '10',
-          'snoozeCount'     => '2',
-          'vibe'            => 'DEFAULT',
-        },
+        'time'            => '10:00',
+        'enabled'         => 'true',
+        'recurring'       => 'true',
+        'weekDays'        => '(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)',
+        'label'           => 'test alarm',
+        'snoozeLength'    => '10',
+        'snoozeCount'     => '2',
+        'vibe'            => 'DEFAULT',
         'request_headers' => { 'Accept-Language' => 'en_US' }
       }
     end
