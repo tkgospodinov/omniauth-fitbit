@@ -1066,7 +1066,27 @@ describe Fitbit::Api do
       expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
-    it 'should create API-Get-Body-Fat OAuth request' do
+    it 'should create API-Get-Body-Fat <date> OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should create API-Get-Body-Fat <base-date>/<end-date> OAuth request' do
+      @api_url = '/1/user/-/body/log/fat/date/2014-09-09/2014-12-31.xml'
+      @params.delete('date')
+      @params['base-date'] = '2014-09-09'
+      @params['end-date'] = '2014-12-31'
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should create API-Get-Body-Fat <base-date>/<period> OAuth request' do
+      @api_url = '/1/user/-/body/log/fat/date/2014-09-09/2014-12-31.xml'
+      @params.delete('date')
+      @params['base-date'] = '2014-09-09'
+      @params['period'] = '2014-12-31'
       stub_request(:get, "api.fitbit.com#{@api_url}")
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
