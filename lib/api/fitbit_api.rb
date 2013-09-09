@@ -129,15 +129,21 @@ module Fitbit
       access_token = OAuth::AccessToken.new fitbit.consumer, auth_token, auth_secret
     end
 
-    def send_api_request api_params, access_token
-      request_url = build_url(@@api_version, api_params)
-      request_http_method = get_http_method(api_params['api-method'])
-      request_headers = api_params['request_headers']
+    def send_api_request params, access_token
+      request_url = build_url(@@api_version, params)
+      request_http_method = get_http_method(params['api-method'])
+      request_headers = get_request_headers(params) 
       access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
     end
     
     def get_http_method method
       api_http_method = @@fitbit_methods["#{method}"]['http_method']
+    end
+    
+    def get_request_headers params
+      api_method = params['api-method']
+      available_headers = @@fitbit_methods[api_method]['request_headers'] & params.keys
+      Hash[params.each { |k,v| [k,v] if available_headers.include? k }] if available_headers
     end
 
     def get_url_resources params
@@ -219,7 +225,7 @@ module Fitbit
       'api-create-food' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
+        'post_parameters'     => ['name', 'defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
         'request_headers'     => ['accept-locale'],
         'resources'           => ['foods'],
       },
@@ -293,6 +299,7 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays'],
+        'request_headers'     => ['accept-language'],
         'required_parameters' => ['device-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms'],
       },
@@ -312,6 +319,7 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays', 'snoozeLength', 'snoozeCount'],
+        'request_headers'     => ['accept-language'],
         'required_parameters' => ['device-id', 'alarm-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms', '<alarm-id>'],
       },
@@ -325,7 +333,7 @@ module Fitbit
       'api-get-activity' => {
         'auth_required'       => false,
         'http_method'         => 'get',
-        'request_headers'     => ['accept-locale', 'accept-language'],
+        'request_headers'     => ['accept-locale'],
         'required_parameters' => ['activity-id'],
         'resources'           => ['activities', '<activity-id>'],
       },

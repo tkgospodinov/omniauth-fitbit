@@ -245,7 +245,7 @@ describe Fitbit::Api do
       @params = {
         'api-method'            => 'API-Config-Friends-Leaderboard',
         'hideMeFromLeaderboard' => 'true',
-        'request_headers'       => { 'Accept-Language' => 'en_US' }
+        'Accept-Language'       => 'en_US',
       }
       
     end
@@ -254,8 +254,8 @@ describe Fitbit::Api do
       expect(subject.build_url(@api_version, @params)).to eq(@api_url)
     end
 
-    it 'should create API-Config-Friends-Leaderboard OAuth request' do
-      headers = @params['request_headers']
+    it 'should create API-Config-Friends-Leaderboard OAuth request w/ _request headers_' do
+      headers = { 'Accept-Language' => 'en_US' }
       stub_request(:post, "api.fitbit.com#{@api_url}") do |req|
         headers.each_pair do |k,v|
           req.headers[k] = v
@@ -282,12 +282,13 @@ describe Fitbit::Api do
       @api_url = '/1/foods.xml'
       @params = {
         'api-method'                    => 'API-Create-Food',
+        'name'                          => 'food name',
         'defaultFoodMeasurementUnitId'  => '1',
         'defaultServingSize'            => '1',
         'calories'                      => '1000',
         'formType'                      => 'LIQUID',
         'description'                   => 'Say something here about the new food',
-        'request_headers'               => { 'Accept-Locale' => 'en_US' }
+        'Accept-Locale'                 => 'en_US', 
       }
     end
 
@@ -651,7 +652,7 @@ describe Fitbit::Api do
         'snoozeLength'    => '10',
         'snoozeCount'     => '2',
         'vibe'            => 'DEFAULT',
-        'request_headers' => { 'Accept-Language' => 'en_US' }
+        'Accept-Language' => 'en_US', 
       }
     end
 
@@ -760,7 +761,7 @@ describe Fitbit::Api do
         'snoozeLength'    => '10',
         'snoozeCount'     => '2',
         'vibe'            => 'DEFAULT',
-        'request_headers' => { 'Accept-Language' => 'en_US' }
+        'Accept-Language' => 'en_US', 
       }
     end
 
@@ -781,7 +782,7 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+                      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -795,12 +796,10 @@ describe Fitbit::Api do
       @api_method = 'api-get-activities' 
       @api_url = "/1/user/-/activities/date/#{@date}.xml"
       @params = {
-        'api-method'       => 'API-Get-Activities',
-        'date'             => @date,
-        'request_headers'  => { 
-          'Accept-Locale'   => 'en_US',
-          'Accept-Language' => 'en_US',
-        }
+        'api-method'        => 'API-Get-Activities',
+        'date'              => @date,
+        'Accept-Locale'     => 'en_US',
+        'Accept-Language'   => 'en_US',
       }
     end
 
@@ -833,10 +832,8 @@ describe Fitbit::Api do
         'api-method'      => 'API-Get-Activities',
         'date'            => @date,
         'user-id'         => @user_id,
-        'request_headers' => { 
-          'Accept-Locale'   => 'en_US',
-          'Accept-Language' => 'en_US',
-        }
+        'Accept-Locale'   => 'en_US',
+        'Accept-Language' => 'en_US',
       }
     end
 
@@ -863,9 +860,7 @@ describe Fitbit::Api do
       @params = {
         'api-method'      => 'API-Get-Activity',
         'activity-id'     => @activity_id,
-        'request_headers' => { 
-          'Accept-Locale'   => 'en_US',
-        }
+        'Accept-Locale'   => 'en_US',
       }
     end
 
@@ -891,9 +886,7 @@ describe Fitbit::Api do
       @api_url = '/1/user/-/activities/goals/daily.xml'
       @params = {
         'api-method'      => 'API-Get-Activity-Daily-Goals',
-        'request_headers' => { 
-          'Accept-Language'   => 'en_US',
-        }
+        'Accept-Language' => 'en_US',
       }
     end
 
@@ -919,9 +912,7 @@ describe Fitbit::Api do
       @api_url = '/1/user/-/activities.xml'
       @params = {
         'api-method'      => 'API-Get-Activity-Stats',
-        'request_headers' => { 
-          'Accept-Language' => 'en_US',
-        }
+        'Accept-Language' => 'en_US',
       }
     end
 
@@ -948,9 +939,7 @@ describe Fitbit::Api do
       @params = {
         'api-method'      => 'API-Get-Activity-Stats',
         'user-id'     => @user_id,
-        'request_headers' => { 
-          'Accept-Language' => 'en_US',
-        }
+        'Accept-Language' => 'en_US',
       }
     end
 
@@ -971,9 +960,7 @@ describe Fitbit::Api do
       @api_url = '/1/user/-/activities/goals/weekly.xml'
       @params = {
         'api-method'      => 'API-Get-Activity-Weekly-Goals',
-        'request_headers' => { 
-          'Accept-Language' => 'en_US',
-        }
+        'Accept-Language' => 'en_US',
       }
     end
 
@@ -999,9 +986,7 @@ describe Fitbit::Api do
       @api_url = '/1/user/-/badges.xml'
       @params = {
         'api-method'      => 'API-Get-Badges',
-        'request_headers' => { 
-          'Accept-Locale'   => 'en_US',
-        }
+        'Accept-Locale'   => 'en_US',
       }
     end
 
@@ -1028,9 +1013,7 @@ describe Fitbit::Api do
       @params = {
         'api-method'      => 'API-Get-Badges',
         'user-id'         => @user_id,
-        'request_headers' => { 
-          'Accept-Locale'   => 'en_US',
-        }
+        'Accept-Locale'   => 'en_US',
       }
     end
 
