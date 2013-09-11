@@ -96,7 +96,6 @@ describe Fitbit::Api do
     @consumer_secret = random_data(:token)
     @auth_token = random_data(:token)
     @auth_secret = random_data(:token)
-    @api_version = 1
     @fitbit_methods = subject.get_fitbit_methods
     
     #generate useful random data for tests
@@ -140,7 +139,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Accept-Invite url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Accept-Invite OAuth request' do
@@ -171,7 +170,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Add-Favorite-Activity url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Add-Favorite-Activity OAuth request' do
@@ -202,7 +201,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Add-Favorite-Food url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Add-Favorite-Food OAuth request' do
@@ -223,12 +222,12 @@ describe Fitbit::Api do
       @api_url = '/1/activities.xml'
       @params = { 
         'api-method'        => 'API-Browse-Activites',
-        'request-headers'   => { 'Accept-Locale' => 'en_US' }
+        'Accept-Locale' => 'en_US', 
       }
     end
 
     it 'should create API-Browse-Activites url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Browse-Activites OAuth request' do
@@ -251,7 +250,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Config-Friends-Leaderboard url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Config-Friends-Leaderboard OAuth request w/ _request headers_' do
@@ -293,7 +292,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Create-Food url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Create-Food OAuth request' do
@@ -328,7 +327,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Create-Invite url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Create-Invite OAuth request' do
@@ -363,7 +362,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Activity-Log url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Activity-Log OAuth request' do
@@ -394,7 +393,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Blood-Pressure-Log url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Blood-Pressure-Log OAuth request' do
@@ -425,7 +424,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Body-Fat-Log url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Body-Fat-Log OAuth request' do
@@ -456,7 +455,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Body-Weight-Log url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Body-Weight-Log OAuth request' do
@@ -487,7 +486,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Favorite-Activity url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Favorite-Activity OAuth request' do
@@ -518,7 +517,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Favorite-Food url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Favorite-Food OAuth request' do
@@ -544,7 +543,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Food-Log url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Food-Log OAuth request' do
@@ -570,7 +569,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Heart-Rate-Log url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Heart-Rate-Log OAuth request' do
@@ -596,7 +595,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Sleep-Log url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Sleep-Log OAuth request' do
@@ -622,7 +621,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Water-Log url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Water-Log OAuth request' do
@@ -657,7 +656,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Add-Alarm url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Devices-Add-Alarm OAuth request' do
@@ -694,7 +693,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Delete-Alarm url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Devices-Delete-Alarm OAuth request' do
@@ -725,7 +724,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Get-Alarms url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Devices-Get-Alarms OAuth request' do
@@ -766,7 +765,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Update-Alarm url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Devices-Update-Alarm OAuth request' do
@@ -804,7 +803,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activities url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activities OAuth request' do
@@ -818,7 +817,7 @@ describe Fitbit::Api do
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
-    it 'should return a helpful error if auth_tokens are missing' do
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
@@ -838,7 +837,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activities url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activities OAuth request' do
@@ -849,6 +848,12 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      @params.delete('user-id')
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
@@ -865,7 +870,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity OAuth request' do
@@ -891,7 +896,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Daily-Goals url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity-Daily-Goals OAuth request' do
@@ -917,7 +922,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Stats url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity-Stats OAuth request' do
@@ -944,7 +949,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Stats url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity-Stats OAuth request' do
@@ -965,7 +970,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Weekly-Goals url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity-Weekly-Goals OAuth request' do
@@ -991,7 +996,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Badges url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Badges OAuth request' do
@@ -1018,7 +1023,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Badges url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Badges OAuth request' do
@@ -1039,7 +1044,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Blood-Pressure url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Blood-Pressure OAuth request' do
@@ -1061,6 +1066,7 @@ describe Fitbit::Api do
 
   context 'API-Get-Body-Fat method' do
     before(:each) do
+      @params = {}
       @api_method = 'api-get-body-fat'
       @api_url = "/1/user/-/body/log/fat/date/#{@date}.xml"
       @params = {
@@ -1070,7 +1076,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat <date> url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<end-date> url' do
@@ -1078,7 +1084,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<period> url' do
@@ -1086,7 +1092,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Fat <date> OAuth request' do
@@ -1126,6 +1132,272 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Get-Body-Fat-Goal method' do
+    before(:each) do
+      @api_method = 'api-get-body-fat-goal' 
+      @api_url = '/1/user/-/body/log/fat/goal.xml'
+      @params = {
+        'api-method'      => 'API-Get-Body-Fat-Goal',
+      }
+    end
+
+    it 'should create API-Get-Body-Fat-Goal url' do
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Fat-Goal OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Body-Measurements method' do
+    before(:each) do
+      @api_method = 'api-get-body-measurements' 
+      @api_url = "/1/user/-/body/date/#{@date}.xml"
+      @params = {
+        'api-method'      => 'API-Get-Body-Measurements',
+        'date'            => @date,
+      }
+    end
+
+    it 'should create API-Get-Body-Measurements url' do
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Measurements OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Body-Measurements method with _user-id_ instead of auth tokens' do
+    before(:each) do
+      @api_method = 'api-get-body-measurements' 
+      @api_url = "/1/user/#{@user_id}/body/date/#{@date}.xml"
+      @params = {
+        'api-method'      => 'API-Get-Body-Measurements',
+        'date'            => @date,
+        'user-id'         => @user_id
+      }
+    end
+
+    it 'should create API-Get-Body-Measurements url' do
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Measurements OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      @params.delete('user-id')
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Body-Weight method' do
+    before(:each) do
+      @params = {}
+      @api_method = 'api-get-body-weight'
+      @api_url = "/1/user/-/body/log/weight/date/#{@date}.xml"
+      @params = {
+        'api-method'      => 'API-Get-Body-Weight',
+        'date'            => @date,
+      }
+    end
+
+    it 'should create API-Get-Body-Weight <date> url' do
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Weight <base-date>/<end-date> url' do
+      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@date_range[1]}.xml"
+      @params.delete('date')
+      @params['base-date'] = @date_range[0]
+      @params['end-date'] = @date_range[1]
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Weight <base-date>/<period> url' do
+      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@period}.xml"
+      @params.delete('date')
+      @params['base-date'] = @date_range[0]
+      @params['period'] = @period
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Weight <date> OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should create API-Get-Body-Weight <base-date>/<end-date> OAuth request' do
+      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@date_range[1]}.xml"
+      @params.delete('date')
+      @params['base-date'] = @date_range[0]
+      @params['end-date'] = @date_range[1]
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should create API-Get-Body-Weight <base-date>/<period> OAuth request' do
+      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@period}.xml"
+      @params.delete('date')
+      @params['base-date'] = @date_range[0]
+      @params['period'] = @period
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Body-Weight-Goal method' do
+    before(:each) do
+      @api_method = 'api-get-body-weight-goal' 
+      @api_url = '/1/user/-/body/log/weight/goal.xml'
+      @params = {
+        'api-method'      => 'API-Get-Body-Weight-Goal',
+        'Accept-Language'       => 'en_US',
+      }
+    end
+
+    it 'should create API-Get-Body-Weight-Goal url' do
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Body-Weight-Goal OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Device method' do
+    before(:each) do
+      @params = {}
+      @api_method = 'api-get-device' 
+      @api_url = "/1/user/-/devices/#{@device_id}.xml"
+      @params = {
+        'api-method'      => 'API-Get-Device',
+        'device-id'       => @device_id,
+      }
+    end
+
+    it 'should create API-Get-Device url' do
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Device OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Device method with _user-id_ instead of auth tokens' do
+    before(:each) do
+      @params = {}
+      @api_method = 'api-get-device' 
+      @api_url = "/1/user/#{@user_id}/devices/#{@device_id}.xml"
+      @params = {
+        'api-method'      => 'API-Get-Device',
+        'device-id'       => @device_id,
+        'user-id'         => @user_id,
+      }
+    end
+
+    it 'should create API-Get-Device url' do
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Device OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      @params.delete('user-id')
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Devices' do
+    before(:each) do
+      @api_method = 'api-get-devices' 
+      @api_url = '/1/user/-/devices.xml'
+      @params = {
+        'api-method'      => 'API-Get-Devices',
+      }
+    end
+
+    it 'should create API-Get-Devices url' do
+      expect(subject.build_url(@params)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Devices OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+
+
   context 'API-Search-Foods method' do
     before(:each) do
       @api_method = 'api-search-foods'
@@ -1137,7 +1409,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Search-Foods url' do
-      expect(subject.build_url(@api_version, @params)).to eq(@api_url)
+      expect(subject.build_url(@params)).to eq(@api_url)
     end
 
     it 'should create API-Search-Foods OAuth request' do

@@ -9,7 +9,8 @@ module Fitbit
       send_api_request(api_params, access_token)
     end
 
-    def build_url api_version, params
+    def build_url params
+      api_version = @@api_version
       api_url_resources = get_url_resources(params)
       api_format = get_response_format(params['response-format'])
       api_query = uri_encode_query(params['query']) 
@@ -130,7 +131,7 @@ module Fitbit
     end
 
     def send_api_request params, access_token
-      request_url = build_url(@@api_version, params)
+      request_url = build_url(params)
       request_http_method = get_http_method(params['api-method'])
       request_headers = get_request_headers(params) 
       access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
@@ -212,21 +213,21 @@ module Fitbit
       'api-browse-activites' => {
         'auth_required'       => false,
         'http_method'         => 'get',
-        'request_headers'     => ['accept-locale'],
+        'request_headers'     => ['Accept-Locale'],
         'resources'           => ['activities'],
       },
       'api-config-friends-leaderboard' => {
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['hideMeFromLeaderboard'],
-        'request_headers'     => ['accept-language'],
+        'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'friends', 'leaderboard'],
       },
       'api-create-food' => {
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['name', 'defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
-        'request_headers'     => ['accept-locale'],
+        'request_headers'     => ['Accept-Locale'],
         'resources'           => ['foods'],
       },
       'api-create-invite' => {
@@ -299,7 +300,7 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays'],
-        'request_headers'     => ['accept-language'],
+        'request_headers'     => ['Accept-Language'],
         'required_parameters' => ['device-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms'],
       },
@@ -319,46 +320,46 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays', 'snoozeLength', 'snoozeCount'],
-        'request_headers'     => ['accept-language'],
+        'request_headers'     => ['Accept-Language'],
         'required_parameters' => ['device-id', 'alarm-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms', '<alarm-id>'],
       },
       'api-get-activities' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
-        'request_headers'     => ['accept-locale', 'accept-language'],
+        'request_headers'     => ['Accept-Locale', 'Accept-Language'],
         'required_parameters' => ['date'],
         'resources'           => ['user', '-', 'activities', 'date', '<date>'],
       },
       'api-get-activity' => {
         'auth_required'       => false,
         'http_method'         => 'get',
-        'request_headers'     => ['accept-locale'],
+        'request_headers'     => ['Accept-Locale'],
         'required_parameters' => ['activity-id'],
         'resources'           => ['activities', '<activity-id>'],
       },
       'api-get-activity-daily-goals' => {
         'auth_required'       => true,
         'http_method'         => 'get',
-        'request_headers'     => ['accept-language'],
+        'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'activities', 'goals', 'daily'],
       },
       'api-get-activity-stats' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
-        'request_headers'     => ['accept-language'],
+        'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'activities'],
       },
       'api-get-activity-weekly-goals' => {
         'auth_required'       => true,
         'http_method'         => 'get',
-        'request_headers'     => ['accept-language'],
+        'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'activities', 'goals', 'weekly'],
       },
       'api-get-badges' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
-        'request_headers'     => ['accept-locale'],
+        'request_headers'     => ['Accept-Locale'],
         'resources'           => ['user', '-', 'badges'],
       },
       'api-get-blood-pressure' => {
@@ -375,11 +376,56 @@ module Fitbit
           'end-date'  => ['base-date', 'end-date'],
           'period'    => ['base-date', 'period'],
         },
+        'request_headers'     => ['Accept-Language'],
         'resources'           => {
           'date'      => ['user', '-', 'body', 'log', 'fat', 'date', '<date>'],
           'end-date'  => ['user', '-', 'body', 'log', 'fat', 'date', '<base-date>', '<end-date>'],
           'period'    => ['user', '-', 'body', 'log', 'fat', 'date', '<base-date>', '<period>'],
         }
+      },
+      'api-get-body-fat-goal' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'resources'           => ['user', '-', 'body', 'log', 'fat', 'goal'],
+      },
+      'api-get-body-measurements' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'required_parameters' => ['date'],
+        'resources'           => ['user', '-', 'body', 'date', '<date>'],
+      },
+      'api-get-body-weight' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'required_parameters' => {
+          'date'      => ['date'],
+          'end-date'  => ['base-date', 'end-date'],
+          'period'    => ['base-date', 'period'],
+        },
+        'resources'           => {
+          'date'      => ['user', '-', 'body', 'log', 'weight', 'date', '<date>'],
+          'end-date'  => ['user', '-', 'body', 'log', 'weight', 'date', '<base-date>', '<end-date>'],
+          'period'    => ['user', '-', 'body', 'log', 'weight', 'date', '<base-date>', '<period>'],
+        }
+      },
+      'api-get-body-weight-goal' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'body', 'log', 'weight', 'goal'],
+      },
+      'api-get-device' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'required_parameters' => ['device-id'],
+        'resources'           => ['user', '-', 'devices', '<device-id>'],
+      },
+      'api-get-devices' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'resources'           => ['user', '-', 'devices'],
       },
     }
 
