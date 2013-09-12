@@ -467,6 +467,12 @@ module Fitbit
         'request_headers'     => ['Accept-Locale'],
         'resources'           => ['user', '-', 'foods', 'log', 'frequent'],
       },
+      'api-get-friends' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'friends'],
+      },
     }
 
   end
