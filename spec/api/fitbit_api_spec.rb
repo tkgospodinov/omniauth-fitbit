@@ -1396,6 +1396,60 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Get-Favorite-Activities method' do
+    before(:each) do
+      @api_method = 'api-get-favorite-activities' 
+      @api_url = "/1/user/-/activities/favorite.xml"
+      @params = {
+        'api-method'        => 'API-Get-Favorite-Activities',
+        'Accept-Locale'     => 'en_US',
+      }
+    end
+
+    it 'should create API-Get-Favorite-Activities url' do
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Favorite-Activities OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-Favorite-Activities method with _user-id_ instead of auth tokens' do
+    before(:each) do
+      @api_method = 'api-get-favorite-activities' 
+      @api_url = "/1/user/#{@user_id}/activities/favorite.xml"
+      @params = {
+        'api-method'      => 'API-Get-Favorite-Activities',
+        'user-id'         => @user_id,
+        'Accept-Locale'   => 'en_US',
+      }
+    end
+
+    it 'should create API-Get-Favorite-Activities url' do
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Favorite-Activities OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      @params.delete('user-id')
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
 
 
   context 'API-Search-Foods method' do

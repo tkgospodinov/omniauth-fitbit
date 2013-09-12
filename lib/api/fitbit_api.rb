@@ -419,6 +419,12 @@ module Fitbit
         'http_method'         => 'get',
         'resources'           => ['user', '-', 'devices'],
       },
+      'api-get-favorite-activities' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale'],
+        'resources'           => ['user', '-', 'activities', 'favorite'],
+      },
     }
 
   end
