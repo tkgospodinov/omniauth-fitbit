@@ -1799,6 +1799,35 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Get-Glucose method' do
+    before(:each) do
+      @api_method = 'api-get-glucose' 
+      @api_url = "/1/user/-/glucose/date/#{@date}.#{@response_format}"
+      @params = {
+        'api-method'        => 'API-Get-Glucose',
+        'Accept-Language'       => 'en_US',
+        'date'              => @date,
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Get-Glucose url' do
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Glucose OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+
 
 
 

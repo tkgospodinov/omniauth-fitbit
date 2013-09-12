@@ -479,6 +479,13 @@ module Fitbit
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'friends', 'leaderboard'],
       },
+      'api-get-glucose' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'required_parameters' => ['date'],
+        'resources'           => ['user', '-', 'glucose', 'date', '<date>'],
+      },
     }
 
   end
