@@ -139,7 +139,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Accept-Invite url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Accept-Invite OAuth request' do
@@ -170,7 +170,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Add-Favorite-Activity url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Add-Favorite-Activity OAuth request' do
@@ -201,7 +201,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Add-Favorite-Food url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Add-Favorite-Food OAuth request' do
@@ -227,7 +227,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Browse-Activites url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Browse-Activites OAuth request' do
@@ -250,7 +250,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Config-Friends-Leaderboard url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Config-Friends-Leaderboard OAuth request w/ _request headers_' do
@@ -292,7 +292,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Create-Food url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Create-Food OAuth request' do
@@ -327,7 +327,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Create-Invite url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Create-Invite OAuth request' do
@@ -362,7 +362,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Activity-Log url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Activity-Log OAuth request' do
@@ -393,7 +393,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Blood-Pressure-Log url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Blood-Pressure-Log OAuth request' do
@@ -424,7 +424,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Body-Fat-Log url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Body-Fat-Log OAuth request' do
@@ -455,7 +455,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Body-Weight-Log url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Body-Weight-Log OAuth request' do
@@ -486,7 +486,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Favorite-Activity url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Favorite-Activity OAuth request' do
@@ -517,7 +517,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Favorite-Food url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Favorite-Food OAuth request' do
@@ -543,7 +543,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Food-Log url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Food-Log OAuth request' do
@@ -569,7 +569,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Heart-Rate-Log url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Heart-Rate-Log OAuth request' do
@@ -595,7 +595,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Sleep-Log url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Sleep-Log OAuth request' do
@@ -621,7 +621,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Water-Log url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Delete-Water-Log OAuth request' do
@@ -656,7 +656,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Add-Alarm url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Devices-Add-Alarm OAuth request' do
@@ -693,7 +693,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Delete-Alarm url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Devices-Delete-Alarm OAuth request' do
@@ -724,7 +724,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Get-Alarms url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Devices-Get-Alarms OAuth request' do
@@ -765,7 +765,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Update-Alarm url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Devices-Update-Alarm OAuth request' do
@@ -803,7 +803,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activities url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activities OAuth request' do
@@ -837,7 +837,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activities url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activities OAuth request' do
@@ -870,7 +870,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity OAuth request' do
@@ -896,7 +896,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Daily-Goals url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity-Daily-Goals OAuth request' do
@@ -922,7 +922,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Stats url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity-Stats OAuth request' do
@@ -949,7 +949,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Stats url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity-Stats OAuth request' do
@@ -970,7 +970,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Weekly-Goals url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Activity-Weekly-Goals OAuth request' do
@@ -996,7 +996,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Badges url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Badges OAuth request' do
@@ -1023,7 +1023,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Badges url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Badges OAuth request' do
@@ -1044,7 +1044,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Blood-Pressure url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Blood-Pressure OAuth request' do
@@ -1076,7 +1076,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat <date> url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<end-date> url' do
@@ -1084,7 +1084,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<period> url' do
@@ -1092,7 +1092,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Fat <date> OAuth request' do
@@ -1142,7 +1142,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat-Goal url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Fat-Goal OAuth request' do
@@ -1168,7 +1168,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Measurements url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Measurements OAuth request' do
@@ -1195,7 +1195,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Measurements url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Measurements OAuth request' do
@@ -1223,7 +1223,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Weight <date> url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Weight <base-date>/<end-date> url' do
@@ -1231,7 +1231,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Weight <base-date>/<period> url' do
@@ -1239,7 +1239,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Weight <date> OAuth request' do
@@ -1290,7 +1290,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Weight-Goal url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Body-Weight-Goal OAuth request' do
@@ -1317,7 +1317,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Device url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Device OAuth request' do
@@ -1350,7 +1350,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Device url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Device OAuth request' do
@@ -1381,7 +1381,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Devices url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Get-Devices OAuth request' do
@@ -1409,7 +1409,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Search-Foods url' do
-      expect(subject.build_url(@params)).to eq(@api_url)
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
     end
 
     it 'should create API-Search-Foods OAuth request' do

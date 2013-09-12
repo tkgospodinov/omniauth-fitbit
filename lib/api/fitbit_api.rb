@@ -2,16 +2,17 @@ module Fitbit
   class Api < OmniAuth::Strategies::Fitbit
     
     def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
-      api_params = get_lowercase(params)
-      api_error = return_any_api_errors(api_params, auth_token, auth_secret)
+      api_params = get_lowercase_api_methods(params)
+      api_method = api_params['api-method']
+      api_error = return_any_api_errors(api_params, api_method, auth_token, auth_secret)
       raise api_error if api_error
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
-      send_api_request(api_params, access_token)
+      send_api_request(api_params, api_method, access_token)
     end
 
-    def build_url params
+    def build_url params, api_method
       api_version = @@api_version
-      api_url_resources = get_url_resources(params)
+      api_url_resources = get_url_resources(params, api_method)
       api_format = get_response_format(params['response-format'])
       api_query = uri_encode_query(params['query']) 
       request_url = "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}"
@@ -23,9 +24,8 @@ module Fitbit
 
     private 
 
-    def return_any_api_errors params, auth_token, auth_secret
+    def return_any_api_errors params, api_method, auth_token, auth_secret
       api_error = nil
-      api_method = params['api-method']
       fitbit_api_method = @@fitbit_methods[api_method]
 
       if !fitbit_api_method
@@ -46,7 +46,7 @@ module Fitbit
       end
     end
 
-    def get_lowercase params
+    def get_lowercase_api_methods params
       api_strings = Hash[params.map { |k,v| [k, v.downcase] if k == 'api-method' }]
       api_parameters_and_headers = Hash[params.map { |k,v| [k, v] if k != 'api-method' }]
       api_strings.merge(api_parameters_and_headers)
@@ -85,7 +85,7 @@ module Fitbit
       count = 0
       if exclusive_post_parameters && supplied_post_parameters
         supplied_post_parameters.each do |parameter|
-          count +=1 if exclusive_post_parameters.include? parameter
+          count += 1 if exclusive_post_parameters.include? parameter
         end
       end
 
@@ -130,25 +130,19 @@ module Fitbit
       access_token = OAuth::AccessToken.new fitbit.consumer, auth_token, auth_secret
     end
 
-    def send_api_request params, access_token
-      request_url = build_url(params)
-      request_http_method = get_http_method(params['api-method'])
-      request_headers = get_request_headers(params) 
+    def send_api_request params, api_method, access_token
+      request_url = build_url(params, api_method)
+      request_http_method = @@fitbit_methods[api_method]['http_method']
+      request_headers = get_request_headers(params, api_method)
       access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
     end
     
-    def get_http_method method
-      api_http_method = @@fitbit_methods["#{method}"]['http_method']
-    end
-    
-    def get_request_headers params
-      api_method = params['api-method']
+    def get_request_headers params, api_method
       available_headers = @@fitbit_methods[api_method]['request_headers'] & params.keys
       Hash[params.each { |k,v| [k,v] if available_headers.include? k }] if available_headers
     end
 
-    def get_url_resources params
-      api_method = params['api-method'].downcase
+    def get_url_resources params, api_method
       fitbit_api_method = @@fitbit_methods[api_method]
       dynamic_resources = fitbit_api_method['required_parameters']
       api_ids = get_required_parameters(dynamic_resources, params) 
