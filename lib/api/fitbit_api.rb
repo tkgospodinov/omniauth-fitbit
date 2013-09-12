@@ -433,8 +433,14 @@ module Fitbit
       'api-get-food' => {
         'auth_required'       => false,
         'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale'],
         'required_parameters' => ['food-id'],
         'resources'           => ['foods', '<food-id>'],
+      },
+      'api-get-food-goals' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'resources'           => ['user', '-', 'foods', 'log', 'goal'],
       },
     }
 
