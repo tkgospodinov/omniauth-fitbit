@@ -1475,6 +1475,33 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Get-Food method' do
+    before(:each) do
+      @api_method = 'api-get-food'
+      @api_url = "/1/foods/#{@food_id}.xml"
+      @params = {
+        'api-method'      => 'API-Get-Food',
+        'food-id'         => @food_id,
+        'Accept-Locale'   => 'en_US', 
+      }
+    end
+
+    it 'should create API-Get-Food url' do
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Food OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
 
 
   context 'API-Search-Foods method' do
@@ -1483,7 +1510,7 @@ describe Fitbit::Api do
       @api_url = '/1/foods/search.xml?query=banana%20cream%20pie'
       @params = { 
         'api-method'      => 'API-Search-Foods',
-        'query'           => 'banana cream pie'
+        'query'           => 'banana cream pie',
       }
     end
 
