@@ -24,6 +24,8 @@ describe Fitbit::Api do
       number_of = rand(31)
       types = ['d', 'w', 'm']
       [number_of, types.sample(1)].join
+    when :response_format
+      random_format = ['json', 'xml'].sample
     end
   end
 
@@ -99,27 +101,34 @@ describe Fitbit::Api do
     @fitbit_methods = subject.get_fitbit_methods
     
     #generate useful random data for tests
-      @activity_id = random_data(:fitbit_id)
-      @activity_log_id = random_data(:fitbit_id)
-      @alarm_id = random_data(:fitbit_id)
-      @body_fat_log_id = random_data(:fitbit_id)
-      @body_weight_log_id = random_data(:fitbit_id)
-      @bp_log_id = random_data(:fitbit_id)
-      @date = random_data(:fixed_date)
-      @date_range = random_data(:date_range)
-      @device_id = random_data(:fitbit_id)
-      @food_id = random_data(:fitbit_id)
-      @food_log_id = random_data(:fitbit_id)
-      @heart_log_id = random_data(:fitbit_id)
-      @period = random_data(:period)
-      @sleep_log_id = random_data(:fitbit_id)
-      @user_id = random_data(:fitbit_id)
-      @water_log_id = random_data(:fitbit_id)
+    @activity_id = random_data(:fitbit_id)
+    @activity_log_id = random_data(:fitbit_id)
+    @alarm_id = random_data(:fitbit_id)
+    @body_fat_log_id = random_data(:fitbit_id)
+    @body_weight_log_id = random_data(:fitbit_id)
+    @bp_log_id = random_data(:fitbit_id)
+    @date = random_data(:fixed_date)
+    @date_range = random_data(:date_range)
+    @device_id = random_data(:fitbit_id)
+    @food_id = random_data(:fitbit_id)
+    @food_log_id = random_data(:fitbit_id)
+    @heart_log_id = random_data(:fitbit_id)
+    @period = random_data(:period)
+    @sleep_log_id = random_data(:fitbit_id)
+    @user_id = random_data(:fitbit_id)
+    @water_log_id = random_data(:fitbit_id)
+  end
+
+  before(:each) do
+    @response_format = random_data(:response_format)
   end
 
   context 'invalid Fitbit API method' do
     before(:each) do
-      @params = { 'api-method' => 'API-Search-Fudd' }
+      @params = { 
+        'api-method'          => 'API-Search-Fudd',
+        'response-format'     => @response_format,
+      }
     end
     it 'should return a helpful error' do
       error_message = "#{@params['api-method'].downcase} is not a valid Fitbit API method."
@@ -130,11 +139,12 @@ describe Fitbit::Api do
   context 'API-Accept-Invite method' do
     before(:each) do
       @api_method = 'api-accept-invite'
-      @api_url = "/1/user/-/friends/invitations/#{@user_id}.xml"
+      @api_url = "/1/user/-/friends/invitations/#{@user_id}.#{@response_format}"
       @params = {
-        'api-method' => 'API-Accept-Invite',
-        'from-user-id' => @user_id,
-        'accept' => 'true' 
+        'api-method'          => 'API-Accept-Invite',
+        'accept'              => 'true',
+        'from-user-id'        => @user_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -162,10 +172,11 @@ describe Fitbit::Api do
   context 'API-Add-Favorite-Activity method' do
     before(:each) do
       @api_method = 'api-add-favorite-activity' 
-      @api_url = "/1/user/-/activities/favorite/#{@activity_id}.xml"
+      @api_url = "/1/user/-/activities/favorite/#{@activity_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Add-Favorite-Activity',
         'activity-id'     => @activity_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -193,10 +204,11 @@ describe Fitbit::Api do
   context 'API-Add-Favorite-Food method' do
     before(:each) do
       @api_method = 'api-add-favorite-food'
-      @api_url = "/1/user/-/foods/log/favorite/#{@food_id}.xml"
+      @api_url = "/1/user/-/foods/log/favorite/#{@food_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Add-Favorite-Food',
         'food-id'         => @food_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -219,10 +231,11 @@ describe Fitbit::Api do
   context 'API-Browse-Activites method' do
     before(:each) do
       @api_method = 'api-browse-activites'
-      @api_url = '/1/activities.xml'
+      @api_url = "/1/activities.#{@response_format}"
       @params = { 
         'api-method'        => 'API-Browse-Activites',
         'Accept-Locale' => 'en_US', 
+        'response-format'     => @response_format,
       }
     end
 
@@ -240,11 +253,12 @@ describe Fitbit::Api do
   context 'API-Config-Friends-Leaderboard method' do
     before(:each) do
       @api_method = 'api-config-friends-leaderboard'
-      @api_url = '/1/user/-/friends/leaderboard.xml'
+      @api_url = "/1/user/-/friends/leaderboard.#{@response_format}"
       @params = {
         'api-method'            => 'API-Config-Friends-Leaderboard',
         'hideMeFromLeaderboard' => 'true',
         'Accept-Language'       => 'en_US',
+        'response-format'     => @response_format,
       }
       
     end
@@ -278,7 +292,7 @@ describe Fitbit::Api do
   context 'API-Create-Food method' do
     before(:each) do
       @api_method = 'api-create-food'
-      @api_url = '/1/foods.xml'
+      @api_url = "/1/foods.#{@response_format}"
       @params = {
         'api-method'                    => 'API-Create-Food',
         'name'                          => 'food name',
@@ -288,6 +302,7 @@ describe Fitbit::Api do
         'formType'                      => 'LIQUID',
         'description'                   => 'Say something here about the new food',
         'Accept-Locale'                 => 'en_US', 
+        'response-format'     => @response_format,
       }
     end
 
@@ -319,10 +334,11 @@ describe Fitbit::Api do
   context 'API-Create-Invite method' do
     before(:each) do
       @api_method = 'api-create-invite'
-      @api_url = '/1/user/-/friends/invitations.xml'
+      @api_url = "/1/user/-/friends/invitations.#{@response_format}"
       @params = {
         'api-method'          => 'API-Create-Invite',
         'invitedUserEmail'    => 'email@email.com',
+        'response-format'     => @response_format,
       }
     end
 
@@ -354,10 +370,11 @@ describe Fitbit::Api do
   context 'API-Delete-Activity-Log method' do
     before(:each) do
       @api_method = 'api-delete-activity-log'
-      @api_url = "/1/user/-/activities/#{@activity_log_id}.xml"
+      @api_url = "/1/user/-/activities/#{@activity_log_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Delete-Activity-Log',
         'activity-log-id' => @activity_log_id, 
+        'response-format'     => @response_format,
       }
     end
 
@@ -385,10 +402,11 @@ describe Fitbit::Api do
   context 'API-Delete-Blood-Pressure-Log method' do
     before(:each) do
       @api_method = 'api-delete-blood-pressure-log'
-      @api_url = "/1/user/-/bp/#{@bp_log_id}.xml"
+      @api_url = "/1/user/-/bp/#{@bp_log_id}.#{@response_format}"
       @params = {
         'api-method'    => 'API-Delete-Blood-Pressure-Log',
         'bp-log-id'     => @bp_log_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -416,10 +434,11 @@ describe Fitbit::Api do
   context 'API-Delete-Body-Fat-Log method' do
     before(:each) do
       @api_method = 'api-delete-body-fat-log'
-      @api_url = "/1/user/-/body/log/fat/#{@body_fat_log_id}.xml"
+      @api_url = "/1/user/-/body/log/fat/#{@body_fat_log_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Delete-Body-Fat-Log',
         'body-fat-log-id' => @body_fat_log_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -447,10 +466,11 @@ describe Fitbit::Api do
   context 'API-Delete-Body-Weight-Log method' do
     before(:each) do
       @api_method = 'api-delete-body-weight-log'
-      @api_url = "/1/user/-/body/log/weight/#{@body_weight_log_id}.xml"
+      @api_url = "/1/user/-/body/log/weight/#{@body_weight_log_id}.#{@response_format}"
       @params = {
         'api-method'          => 'API-Delete-Body-Weight-Log',
         'body-weight-log-id'  => @body_weight_log_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -478,10 +498,11 @@ describe Fitbit::Api do
   context 'API-Delete-Favorite-Activity method' do
     before(:each) do
       @api_method = 'api-delete-favorite-activity' 
-      @api_url = "/1/user/-/activities/favorite/#{@activity_id}.xml"
+      @api_url = "/1/user/-/activities/favorite/#{@activity_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Delete-Favorite-Activity',
         'activity-id'     => @activity_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -509,10 +530,11 @@ describe Fitbit::Api do
   context 'API-Delete-Favorite-Food method' do
     before(:each) do
       @api_method = 'api-delete-favorite-food'
-      @api_url = "/1/user/-/foods/log/favorite/#{@food_id}.xml"
+      @api_url = "/1/user/-/foods/log/favorite/#{@food_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Delete-Favorite-Food',
         'food-id'         => @food_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -535,10 +557,11 @@ describe Fitbit::Api do
   context 'API-Delete-Food-Log method' do
     before(:each) do
       @api_method = 'api-delete-food-log'
-      @api_url = "/1/user/-/foods/log/#{@food_log_id}.xml"
+      @api_url = "/1/user/-/foods/log/#{@food_log_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Delete-Food-Log',
         'food-log-id'     => @food_log_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -561,10 +584,11 @@ describe Fitbit::Api do
   context 'API-Delete-Heart-Rate-Log method' do
     before(:each) do
       @api_method = 'api-delete-heart-rate-log'
-      @api_url = "/1/user/-/heart/#{@heart_log_id}.xml"
+      @api_url = "/1/user/-/heart/#{@heart_log_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Delete-Heart-Rate-Log',
         'heart-log-id'    => @heart_log_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -587,10 +611,11 @@ describe Fitbit::Api do
   context 'API-Delete-Sleep-Log method' do
     before(:each) do
       @api_method = 'api-delete-sleep-log'
-      @api_url = "/1/user/-/sleep/#{@sleep_log_id}.xml"
+      @api_url = "/1/user/-/sleep/#{@sleep_log_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Delete-Sleep-Log',
         'sleep-log-id'    => @sleep_log_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -613,10 +638,11 @@ describe Fitbit::Api do
   context 'API-Delete-Water-Log method' do
     before(:each) do
       @api_method = 'api-delete-water-log'
-      @api_url = "/1/user/-/foods/log/water/#{@water_log_id}.xml"
+      @api_url = "/1/user/-/foods/log/water/#{@water_log_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Delete-Water-Log',
         'water-log-id'    => @water_log_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -639,7 +665,7 @@ describe Fitbit::Api do
   context 'API-Devices-Add-Alarm method' do
     before(:each) do
       @api_method = 'api-devices-add-alarm' 
-      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms.xml"
+      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms.#{@response_format}"
       @params = {
         'api-method'      => 'API-Devices-Add-Alarm',
         'device-id'       => @device_id,
@@ -652,6 +678,7 @@ describe Fitbit::Api do
         'snoozeCount'     => '2',
         'vibe'            => 'DEFAULT',
         'Accept-Language' => 'en_US', 
+        'response-format'     => @response_format,
       }
     end
 
@@ -684,11 +711,12 @@ describe Fitbit::Api do
   context 'API-Devices-Delete-Alarm method' do
     before(:each) do
       @api_method = 'api-devices-delete-alarm' 
-      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms/#{@alarm_id}.xml"
+      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms/#{@alarm_id}.#{@response_format}"
       @params = {
         'api-method'    => 'API-Devices-Delete-Alarm',
         'device-id'     => @device_id,
         'alarm-id'      => @alarm_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -716,10 +744,11 @@ describe Fitbit::Api do
   context 'API-Devices-Get-Alarms method' do
     before(:each) do
       @api_method = 'api-devices-get-alarms' 
-      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms.xml"
+      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms.#{@response_format}"
       @params = {
         'api-method'    => 'API-Devices-Get-Alarms',
         'device-id'     => @device_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -747,7 +776,7 @@ describe Fitbit::Api do
   context 'API-Devices-Update-Alarm method' do
     before(:each) do
       @api_method = 'api-devices-update-alarm' 
-      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms/#{@alarm_id}.xml"
+      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms/#{@alarm_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Devices-Update-Alarm',
         'device-id'       => @device_id,
@@ -761,6 +790,7 @@ describe Fitbit::Api do
         'snoozeCount'     => '2',
         'vibe'            => 'DEFAULT',
         'Accept-Language' => 'en_US', 
+        'response-format'     => @response_format,
       }
     end
 
@@ -793,12 +823,13 @@ describe Fitbit::Api do
   context 'API-Get-Activities method' do
     before(:each) do
       @api_method = 'api-get-activities' 
-      @api_url = "/1/user/-/activities/date/#{@date}.xml"
+      @api_url = "/1/user/-/activities/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'        => 'API-Get-Activities',
         'date'              => @date,
         'Accept-Locale'     => 'en_US',
         'Accept-Language'   => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -826,13 +857,14 @@ describe Fitbit::Api do
   context 'API-Get-Activities method with _user-id_ instead of auth tokens' do
     before(:each) do
       @api_method = 'api-get-activities' 
-      @api_url = "/1/user/#{@user_id}/activities/date/#{@date}.xml"
+      @api_url = "/1/user/#{@user_id}/activities/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Activities',
         'date'            => @date,
         'user-id'         => @user_id,
         'Accept-Locale'   => 'en_US',
         'Accept-Language' => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -861,11 +893,12 @@ describe Fitbit::Api do
   context 'API-Get-Activity method' do
     before(:each) do
       @api_method = 'api-get-activity' 
-      @api_url = "/1/activities/#{@activity_id}.xml"
+      @api_url = "/1/activities/#{@activity_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Activity',
         'activity-id'     => @activity_id,
         'Accept-Locale'   => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -888,10 +921,11 @@ describe Fitbit::Api do
   context 'API-Get-Activity-Daily-Goals method' do
     before(:each) do
       @api_method = 'api-get-activity-daily-goals' 
-      @api_url = '/1/user/-/activities/goals/daily.xml'
+      @api_url = "/1/user/-/activities/goals/daily.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Activity-Daily-Goals',
         'Accept-Language' => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -914,10 +948,11 @@ describe Fitbit::Api do
   context 'API-Get-Activity-Stats method' do
     before(:each) do
       @api_method = 'api-get-activity-stats' 
-      @api_url = '/1/user/-/activities.xml'
+      @api_url = "/1/user/-/activities.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Activity-Stats',
         'Accept-Language' => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -940,11 +975,12 @@ describe Fitbit::Api do
   context 'API-Get-Activity-Stats method with _user-id_ instead of auth tokens' do
     before(:each) do
       @api_method = 'api-get-activity-stats' 
-      @api_url = "/1/user/#{@user_id}/activities.xml"
+      @api_url = "/1/user/#{@user_id}/activities.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Activity-Stats',
         'user-id'     => @user_id,
         'Accept-Language' => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -962,10 +998,11 @@ describe Fitbit::Api do
   context 'API-Get-Activity-Weekly-Goals method' do
     before(:each) do
       @api_method = 'api-get-activity-weekly-goals' 
-      @api_url = '/1/user/-/activities/goals/weekly.xml'
+      @api_url = "/1/user/-/activities/goals/weekly.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Activity-Weekly-Goals',
         'Accept-Language' => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -988,10 +1025,11 @@ describe Fitbit::Api do
   context 'API-Get-Badges method' do
     before(:each) do
       @api_method = 'api-get-badges' 
-      @api_url = '/1/user/-/badges.xml'
+      @api_url = "/1/user/-/badges.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Badges',
         'Accept-Locale'   => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1014,11 +1052,12 @@ describe Fitbit::Api do
   context 'API-Get-Badges method with _user-id_ instead of auth tokens' do
     before(:each) do
       @api_method = 'api-get-activities' 
-      @api_url = "/1/user/#{@user_id}/badges.xml"
+      @api_url = "/1/user/#{@user_id}/badges.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Badges',
         'user-id'         => @user_id,
         'Accept-Locale'   => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1036,10 +1075,11 @@ describe Fitbit::Api do
   context 'API-Get-Blood-Pressure method' do
     before(:each) do
       @api_method = 'api-get-blood-pressure' 
-      @api_url = "/1/user/-/bp/date/#{@date}.xml"
+      @api_url = "/1/user/-/bp/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Blood-Pressure',
         'date'            => @date,
+        'response-format'     => @response_format,
       }
     end
 
@@ -1068,10 +1108,11 @@ describe Fitbit::Api do
     before(:each) do
       @params = {}
       @api_method = 'api-get-body-fat'
-      @api_url = "/1/user/-/body/log/fat/date/#{@date}.xml"
+      @api_url = "/1/user/-/body/log/fat/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Body-Fat',
         'date'            => @date,
+        'response-format'     => @response_format,
       }
     end
 
@@ -1080,7 +1121,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<end-date> url' do
-      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@date_range[1]}.xml"
+      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
@@ -1088,7 +1129,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<period> url' do
-      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@period}.xml"
+      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@period}.#{@response_format}"
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
@@ -1102,7 +1143,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<end-date> OAuth request' do
-      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@date_range[1]}.xml"
+      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
@@ -1112,7 +1153,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<period> OAuth request' do
-      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@period}.xml"
+      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@period}.#{@response_format}"
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
@@ -1135,9 +1176,10 @@ describe Fitbit::Api do
   context 'API-Get-Body-Fat-Goal method' do
     before(:each) do
       @api_method = 'api-get-body-fat-goal' 
-      @api_url = '/1/user/-/body/log/fat/goal.xml'
+      @api_url = "/1/user/-/body/log/fat/goal.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Body-Fat-Goal',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1160,10 +1202,11 @@ describe Fitbit::Api do
   context 'API-Get-Body-Measurements method' do
     before(:each) do
       @api_method = 'api-get-body-measurements' 
-      @api_url = "/1/user/-/body/date/#{@date}.xml"
+      @api_url = "/1/user/-/body/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Body-Measurements',
         'date'            => @date,
+        'response-format'     => @response_format,
       }
     end
 
@@ -1186,11 +1229,12 @@ describe Fitbit::Api do
   context 'API-Get-Body-Measurements method with _user-id_ instead of auth tokens' do
     before(:each) do
       @api_method = 'api-get-body-measurements' 
-      @api_url = "/1/user/#{@user_id}/body/date/#{@date}.xml"
+      @api_url = "/1/user/#{@user_id}/body/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Body-Measurements',
         'date'            => @date,
-        'user-id'         => @user_id
+        'user-id'         => @user_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -1215,10 +1259,11 @@ describe Fitbit::Api do
     before(:each) do
       @params = {}
       @api_method = 'api-get-body-weight'
-      @api_url = "/1/user/-/body/log/weight/date/#{@date}.xml"
+      @api_url = "/1/user/-/body/log/weight/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Body-Weight',
         'date'            => @date,
+        'response-format'     => @response_format,
       }
     end
 
@@ -1227,7 +1272,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Weight <base-date>/<end-date> url' do
-      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@date_range[1]}.xml"
+      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
@@ -1235,7 +1280,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Weight <base-date>/<period> url' do
-      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@period}.xml"
+      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@period}.#{@response_format}"
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
@@ -1249,7 +1294,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Weight <base-date>/<end-date> OAuth request' do
-      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@date_range[1]}.xml"
+      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
@@ -1259,7 +1304,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Weight <base-date>/<period> OAuth request' do
-      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@period}.xml"
+      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@period}.#{@response_format}"
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
@@ -1282,10 +1327,11 @@ describe Fitbit::Api do
   context 'API-Get-Body-Weight-Goal method' do
     before(:each) do
       @api_method = 'api-get-body-weight-goal' 
-      @api_url = '/1/user/-/body/log/weight/goal.xml'
+      @api_url = "/1/user/-/body/log/weight/goal.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Body-Weight-Goal',
         'Accept-Language'       => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1309,10 +1355,11 @@ describe Fitbit::Api do
     before(:each) do
       @params = {}
       @api_method = 'api-get-device' 
-      @api_url = "/1/user/-/devices/#{@device_id}.xml"
+      @api_url = "/1/user/-/devices/#{@device_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Device',
         'device-id'       => @device_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -1341,11 +1388,12 @@ describe Fitbit::Api do
     before(:each) do
       @params = {}
       @api_method = 'api-get-device' 
-      @api_url = "/1/user/#{@user_id}/devices/#{@device_id}.xml"
+      @api_url = "/1/user/#{@user_id}/devices/#{@device_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Device',
         'device-id'       => @device_id,
         'user-id'         => @user_id,
+        'response-format'     => @response_format,
       }
     end
 
@@ -1374,9 +1422,10 @@ describe Fitbit::Api do
   context 'API-Get-Devices' do
     before(:each) do
       @api_method = 'api-get-devices' 
-      @api_url = '/1/user/-/devices.xml'
+      @api_url = "/1/user/-/devices.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Devices',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1399,10 +1448,11 @@ describe Fitbit::Api do
   context 'API-Get-Favorite-Activities method' do
     before(:each) do
       @api_method = 'api-get-favorite-activities' 
-      @api_url = "/1/user/-/activities/favorite.xml"
+      @api_url = "/1/user/-/activities/favorite.#{@response_format}"
       @params = {
         'api-method'        => 'API-Get-Favorite-Activities',
         'Accept-Locale'     => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1425,11 +1475,12 @@ describe Fitbit::Api do
   context 'API-Get-Favorite-Activities method with _user-id_ instead of auth tokens' do
     before(:each) do
       @api_method = 'api-get-favorite-activities' 
-      @api_url = "/1/user/#{@user_id}/activities/favorite.xml"
+      @api_url = "/1/user/#{@user_id}/activities/favorite.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Favorite-Activities',
         'user-id'         => @user_id,
         'Accept-Locale'   => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1453,9 +1504,10 @@ describe Fitbit::Api do
   context 'API-Get-Favorite-Foods method' do
     before(:each) do
       @api_method = 'api-get-favorite-foods'
-      @api_url = "/1/user/-/foods/log/favorite.xml"
+      @api_url = "/1/user/-/foods/log/favorite.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Favorite-Foods',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1478,11 +1530,12 @@ describe Fitbit::Api do
   context 'API-Get-Food method' do
     before(:each) do
       @api_method = 'api-get-food'
-      @api_url = "/1/foods/#{@food_id}.xml"
+      @api_url = "/1/foods/#{@food_id}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Food',
         'food-id'         => @food_id,
         'Accept-Locale'   => 'en_US', 
+        'response-format'     => @response_format,
       }
     end
 
@@ -1505,9 +1558,10 @@ describe Fitbit::Api do
   context 'API-Get-Food-Goals method' do
     before(:each) do
       @api_method = 'api-get-food-goals'
-      @api_url = "/1/user/-/foods/log/goal.xml"
+      @api_url = "/1/user/-/foods/log/goal.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Food-Goals',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1530,11 +1584,12 @@ describe Fitbit::Api do
   context 'API-Get-Foods method' do
     before(:each) do
       @api_method = 'api-get-foods' 
-      @api_url = "/1/user/-/foods/log/date/#{@date}.xml"
+      @api_url = "/1/user/-/foods/log/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'        => 'API-Get-Foods',
         'Accept-Locale'     => 'en_US',
-        'date'              => @date
+        'date'              => @date,
+        'response-format'     => @response_format,
       }
     end
 
@@ -1557,12 +1612,13 @@ describe Fitbit::Api do
   context 'API-Get-Foods method with _user-id_ instead of auth tokens' do
     before(:each) do
       @api_method = 'api-get-foods' 
-      @api_url = "/1/user/#{@user_id}/foods/log/date/#{@date}.xml"
+      @api_url = "/1/user/#{@user_id}/foods/log/date/#{@date}.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Foods',
         'date'            => @date,
         'user-id'         => @user_id,
         'Accept-Locale'   => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1586,10 +1642,11 @@ describe Fitbit::Api do
   context 'API-Get-Food-Units method' do
     before(:each) do
       @api_method = 'api-get-food-units'
-      @api_url = "/1/foods/units.xml"
+      @api_url = "/1/foods/units.#{@response_format}"
       @params = {
         'api-method'      => 'API-Get-Food-Units',
         'Accept-Locale'   => 'en_US', 
+        'response-format'     => @response_format,
       }
     end
 
@@ -1607,11 +1664,12 @@ describe Fitbit::Api do
   context 'API-Get-Frequent-Activities method' do
     before(:each) do
       @api_method = 'api-get-frequent-activities' 
-      @api_url = "/1/user/-/activities/frequent.xml"
+      @api_url = "/1/user/-/activities/frequent.#{@response_format}"
       @params = {
         'api-method'        => 'API-Get-Frequent-Activities',
         'Accept-Language'   => 'en_US',
         'Accept-Locale'     => 'en_US',
+        'response-format'     => @response_format,
       }
     end
 
@@ -1636,10 +1694,11 @@ describe Fitbit::Api do
   context 'API-Search-Foods method' do
     before(:each) do
       @api_method = 'api-search-foods'
-      @api_url = '/1/foods/search.xml?query=banana%20cream%20pie'
+      @api_url = "/1/foods/search.#{@response_format}?query=banana%20cream%20pie"
       @params = { 
         'api-method'      => 'API-Search-Foods',
         'query'           => 'banana cream pie',
+        'response-format'     => @response_format,
       }
     end
 
