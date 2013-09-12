@@ -509,6 +509,12 @@ module Fitbit
         'request_headers'     => ['Accept-Locale', 'Accept-Language'],
         'resources'           => ['user', '-', 'activities', 'recent'],
       },
+      'api-get-sleep' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'required_parameters' => ['date'],
+        'resources'           => ['user', '-', 'sleep', 'date', '<date>'],
+      },
     }
 
   end
