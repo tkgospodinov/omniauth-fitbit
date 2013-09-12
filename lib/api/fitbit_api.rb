@@ -486,6 +486,12 @@ module Fitbit
         'required_parameters' => ['date'],
         'resources'           => ['user', '-', 'glucose', 'date', '<date>'],
       },
+      'api-get-heart-rate' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'required_parameters' => ['date'],
+        'resources'           => ['user', '-', 'heart', 'date', '<date>'],
+      },
     }
 
   end
