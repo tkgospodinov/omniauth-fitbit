@@ -32,7 +32,7 @@ describe Fitbit::Api do
   def helpful_errors api_method, data_type, supplied
     required = get_required_data(api_method, data_type)
     required_data = get_required_parameters(required, supplied)
-    missing_data = delete_required_data(required_data, data_type)
+    missing_data = delete_required_data(required_data, data_type) if required_data
     case data_type
     when 'post_parameters'
       "#{api_method} requires POST Parameters #{required_data}. You're missing #{missing_data}."
@@ -43,12 +43,12 @@ describe Fitbit::Api do
     when 'required_parameters'
       get_required_parameters_error(api_method, required, required_data, missing_data)
     else
-      "#{api_method} is not a valid error type."
+      "#{api_method} is not a valid api method."
     end
   end
 
   def get_required_data api_method, data_type
-    @fitbit_methods[api_method][data_type]
+    @fitbit_methods[api_method][data_type] if @fitbit_methods[api_method]
   end
 
   def get_required_parameters required, supplied
@@ -61,7 +61,9 @@ describe Fitbit::Api do
   end
 
   def get_required_parameters_error api_method, required, required_data, missing_data
-    if required.is_a? Hash
+    if required.nil?
+      error = "#{api_method} is not a valid API method OR does not have any required parameters."
+    elsif required.is_a? Hash
       count = 1
       error = "#{api_method} requires 1 of #{required.length} options: "
       required.keys.each do |x|
@@ -1473,6 +1475,27 @@ describe Fitbit::Api do
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
+
+  context 'API-Get-Invites method' do
+    before(:each) do
+      @api_method = 'api-get-invites' 
+      @api_url = "/1/user/-/friends/invitations.#{@response_format}"
+      @params = {
+        'api-method'            => 'API-Get-Invites',
+        'response-format'       => @response_format,
+      }
+    end
+
+    it 'should create API-Get-Invites OAuth request' do
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
 
 
 

@@ -492,6 +492,11 @@ module Fitbit
         'required_parameters' => ['date'],
         'resources'           => ['user', '-', 'heart', 'date', '<date>'],
       },
+      'api-get-invites' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'resources'           => ['user', '-', 'friends', 'invitations'],
+      },
     }
 
   end
