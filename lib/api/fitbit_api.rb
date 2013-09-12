@@ -497,6 +497,12 @@ module Fitbit
         'http_method'         => 'get',
         'resources'           => ['user', '-', 'friends', 'invitations'],
       },
+      'api-get-meals' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale'],
+        'resources'           => ['user', '-', 'meals'],
+      },
     }
 
   end
