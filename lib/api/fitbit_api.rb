@@ -425,6 +425,11 @@ module Fitbit
         'request_headers'     => ['Accept-Locale'],
         'resources'           => ['user', '-', 'activities', 'favorite'],
       },
+      'api-get-favorite-foods' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'resources'           => ['user', '-', 'foods', 'log', 'favorite'],
+      },
     }
 
   end
