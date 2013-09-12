@@ -449,6 +449,12 @@ module Fitbit
         'required_parameters' => ['date'],
         'resources'           => ['user', '-', 'foods', 'log', 'date', '<date>'],
       },
+      'api-get-food-units' => {
+        'auth_required'       => false,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale'],
+        'resources'           => ['foods', 'units'],
+      },
     }
 
   end

@@ -1583,6 +1583,27 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Get-Food-Units method' do
+    before(:each) do
+      @api_method = 'api-get-food-units'
+      @api_url = "/1/foods/units.xml"
+      @params = {
+        'api-method'      => 'API-Get-Food-Units',
+        'Accept-Locale'   => 'en_US', 
+      }
+    end
+
+    it 'should create API-Get-Food-Units url' do
+      expect(subject.build_url(@params, @params['api-method'].downcase)).to eq(@api_url)
+    end
+
+    it 'should create API-Get-Food-Units OAuth request' do
+      stub_request(:get, "api.fitbit.com#{@api_url}")
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+  end
+
 
   context 'API-Search-Foods method' do
     before(:each) do
