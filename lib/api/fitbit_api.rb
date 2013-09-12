@@ -503,6 +503,12 @@ module Fitbit
         'request_headers'     => ['Accept-Locale'],
         'resources'           => ['user', '-', 'meals'],
       },
+      'api-get-recent-activities' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale', 'Accept-Language'],
+        'resources'           => ['user', '-', 'activities', 'recent'],
+      },
     }
 
   end
