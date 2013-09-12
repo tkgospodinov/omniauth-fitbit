@@ -473,6 +473,12 @@ module Fitbit
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'friends'],
       },
+      'api-get-friends-leaderboard' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'friends', 'leaderboard'],
+      },
     }
 
   end
