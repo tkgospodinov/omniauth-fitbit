@@ -10,14 +10,6 @@ module Fitbit
       send_api_request(api_params, api_method, access_token)
     end
 
-    def build_url params, api_method
-      api_version = @@api_version
-      api_url_resources = get_url_resources(params, api_method)
-      api_format = get_response_format(params['response-format'])
-      api_query = uri_encode_query(params['query']) 
-      request_url = "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}"
-    end
-
     def get_fitbit_methods
       @@fitbit_methods
     end
@@ -133,6 +125,14 @@ module Fitbit
       request_http_method = @@fitbit_methods[api_method]['http_method']
       request_headers = get_request_headers(params, api_method)
       access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
+    end
+
+    def build_url params, api_method
+      api_version = @@api_version
+      api_url_resources = get_url_resources(params, api_method)
+      api_format = get_response_format(params['response-format'])
+      api_query = uri_encode_query(params['query']) 
+      request_url = "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}"
     end
     
     def get_request_headers params, api_method
