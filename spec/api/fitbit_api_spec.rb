@@ -153,9 +153,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Accept-Invite OAuth request' do
-      stub_request(:post, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
@@ -185,9 +183,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Add-Favorite-Activity OAuth request' do
-      stub_request(:post, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -217,9 +213,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Add-Favorite-Food OAuth request' do
-      stub_request(:post, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -244,9 +238,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Browse-Activites OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
   end
 
@@ -383,9 +375,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Activity-Log OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -415,9 +405,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Blood-Pressure-Log OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -447,9 +435,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Body-Fat-Log OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -479,9 +465,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Body-Weight-Log OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -511,9 +495,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Favorite-Activity OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -543,9 +525,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Favorite-Food OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -570,9 +550,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Food-Log OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -597,9 +575,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Heart-Rate-Log OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -624,9 +600,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Sleep-Log OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -651,9 +625,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Delete-Water-Log OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -687,9 +659,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Add-Alarm OAuth request' do
-      stub_request(:post, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
@@ -725,9 +695,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Delete-Alarm OAuth request' do
-      stub_request(:delete, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -757,9 +725,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Get-Alarms OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -799,9 +765,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Update-Alarm OAuth request' do
-      stub_request(:post, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
@@ -838,9 +802,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activities OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -873,9 +835,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activities OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -907,9 +867,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -934,9 +892,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Daily-Goals OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -961,9 +917,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Stats OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -989,9 +943,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Stats OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -1011,9 +963,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Activity-Weekly-Goals OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1038,9 +988,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Badges OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1066,9 +1014,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Badges OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -1088,9 +1034,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Blood-Pressure OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -1137,9 +1081,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat <date> OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<end-date> OAuth request' do
@@ -1147,9 +1089,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should create API-Get-Body-Fat <base-date>/<period> OAuth request' do
@@ -1157,9 +1097,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -1188,9 +1126,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Fat-Goal OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1215,9 +1151,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Measurements OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
@@ -1243,9 +1177,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Measurements OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
@@ -1288,9 +1220,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Weight <date> OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should create API-Get-Body-Weight <base-date>/<end-date> OAuth request' do
@@ -1298,9 +1228,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['end-date'] = @date_range[1]
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should create API-Get-Body-Weight <base-date>/<period> OAuth request' do
@@ -1308,9 +1236,7 @@ describe Fitbit::Api do
       @params.delete('date')
       @params['base-date'] = @date_range[0]
       @params['period'] = @period
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -1340,9 +1266,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Body-Weight-Goal OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1368,9 +1292,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Device OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -1402,9 +1324,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Device OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -1434,9 +1354,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Devices OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1461,9 +1379,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Favorite-Activities OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
@@ -1489,9 +1405,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Favorite-Activities OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
@@ -1516,9 +1430,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Favorite-Foods OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1544,9 +1456,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Food OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -1570,9 +1480,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Food-Goals OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1598,9 +1506,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Foods OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
@@ -1627,9 +1533,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Foods OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
@@ -1655,9 +1559,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Food-Units OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -1678,9 +1580,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Frequent-Activities OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1705,9 +1605,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Frequent-Foods OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1732,9 +1630,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Friends OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
@@ -1760,15 +1656,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Friends OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
-      expect(api_call.class).to eq(Net::HTTPOK)
-    end
-
-    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-      @params.delete('user-id')
-      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -1788,9 +1676,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Friends-Leaderboard OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if auth_tokens are missing' do
@@ -1816,13 +1702,11 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Get-Glucose OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
-    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
@@ -1848,9 +1732,7 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Search-Foods OAuth request' do
-      stub_request(:get, "api.fitbit.com#{@api_url}")
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params)
-      expect(api_call.class).to eq(Net::HTTPOK)
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 
     it 'should return a helpful error if required parameters are missing' do
@@ -1859,4 +1741,15 @@ describe Fitbit::Api do
     end
   end
     
+  def oauth_unauthenticated http_method, api_url, consumer_key, consumer_secret, params
+    stub_request(http_method, "api.fitbit.com#{api_url}")
+    api_call = subject.api_call(consumer_key, consumer_secret, params)
+    expect(api_call.class).to eq(Net::HTTPOK)
+  end
+    
+  def oauth_authenticated http_method, api_url, consumer_key, consumer_secret, params, auth_token, auth_secret
+    stub_request(http_method, "api.fitbit.com#{api_url}")
+    api_call = subject.api_call(consumer_key, consumer_secret, params, auth_token, auth_secret)
+    expect(api_call.class).to eq(Net::HTTPOK)
+  end
 end

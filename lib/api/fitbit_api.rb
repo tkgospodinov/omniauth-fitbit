@@ -480,7 +480,7 @@ module Fitbit
         'resources'           => ['user', '-', 'friends', 'leaderboard'],
       },
       'api-get-glucose' => {
-        'auth_required'       => 'user-id',
+        'auth_required'       => true,
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Language'],
         'required_parameters' => ['date'],
