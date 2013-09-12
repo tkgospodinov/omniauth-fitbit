@@ -455,6 +455,12 @@ module Fitbit
         'request_headers'     => ['Accept-Locale'],
         'resources'           => ['foods', 'units'],
       },
+      'api-get-frequent-activities' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale', 'Accept-Language'],
+        'resources'           => ['user', '-', 'activities', 'frequent'],
+      },
     }
 
   end
