@@ -442,6 +442,13 @@ module Fitbit
         'http_method'         => 'get',
         'resources'           => ['user', '-', 'foods', 'log', 'goal'],
       },
+      'api-get-foods' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale'],
+        'required_parameters' => ['date'],
+        'resources'           => ['user', '-', 'foods', 'log', 'date', '<date>'],
+      },
     }
 
   end
