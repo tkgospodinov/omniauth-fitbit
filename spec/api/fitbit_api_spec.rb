@@ -1855,6 +1855,34 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Log-Heart-Rate method' do
+    before(:each) do
+      @api_method = 'api-log-heart-rate'
+      @api_url = "/1/user/-/heart.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Log-Heart-Rate',
+        'date'                => @date,
+        'heartRate'           => '1',
+        'response-format'     => @response_format,
+        'tracker'             => "Resting Heart Rate",
+      }
+    end
+
+    it 'should create API-Log-Heart-Rate OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if required POST Parameters are missing' do
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
 
 
 

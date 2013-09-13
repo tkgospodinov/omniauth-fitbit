@@ -691,6 +691,12 @@ module Fitbit
         'required_if'         => { 'tracker' => ['glucose'] },
         'resources'           => ['user', '-', 'glucose'],
       },
+      'api-log-heart-rate' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['tracker', 'heartRate', 'date'],
+        'resources'           => ['user', '-', 'heart'],
+      },
     }
   end
 
