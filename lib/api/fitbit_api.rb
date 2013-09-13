@@ -637,6 +637,12 @@ module Fitbit
         'required_if'         => { 'activityName' => ['manualCalories'] },
         'resources'           => ['user', '-', 'activities'],
       },
+      'api-log-blood-pressure' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['systolic', 'diastolic', 'date'],
+        'resources'           => ['user', '-', 'bp'],
+      },
     }
   end
 
