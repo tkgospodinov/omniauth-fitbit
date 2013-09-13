@@ -44,6 +44,8 @@ describe Fitbit::Api do
       "#{api_method} allows only one of these POST Parameters #{exclusive_data}. You used #{extra_data}."
     when 'required_parameters'
       get_required_parameters_error(api_method, required, required_data, missing_data)
+    when 'resource_path'
+      get_resource_path_error(supplied)
     else
       "#{api_method} is not a valid api method."
     end
@@ -76,6 +78,14 @@ describe Fitbit::Api do
       error = "#{api_method} requires #{required_data}. You're missing #{missing_data}."
     end
     error
+  end
+
+  def get_resource_path_error supplied
+    resource_path = supplied['resource-path']
+    fitbit_resource_paths = subject.get_resource_paths
+    if resource_path && (!fitbit_resource_paths.include? resource_path)
+      "#{resource_path} is not a valid Fitbit api-get-time-series resource-path."
+    end
   end
 
   def get_exclusive_data api_method, data_type
@@ -1613,6 +1623,13 @@ describe Fitbit::Api do
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if resource-path is invalid' do
+      @params.delete('resource-path')
+      @params['resource-path'] = 'invalidResourcePath'
+      error_message = helpful_errors(@api_method, 'resource_path', @params)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret) }.should raise_error(RuntimeError, error_message)
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
