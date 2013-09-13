@@ -2,7 +2,7 @@ module Fitbit
   class Api < OmniAuth::Strategies::Fitbit
     
     def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
-      api_params = get_lowercase_api_methods(params)
+      api_params = get_lowercase_api_method(params)
       api_method = api_params['api-method']
       api_error = get_api_errors(api_params, api_method, auth_token, auth_secret)
       raise api_error if api_error
@@ -14,6 +14,10 @@ module Fitbit
       @@fitbit_methods
     end
 
+    def get_resource_paths
+      @@resource_paths
+    end
+
     private 
 
     def get_api_errors params, api_method, auth_token, auth_secret
@@ -21,35 +25,37 @@ module Fitbit
       fitbit_api_method = @@fitbit_methods[api_method]
       required_parameters = fitbit_api_method['required_parameters'] if fitbit_api_method
       post_parameters = fitbit_api_method['post_parameters'] if fitbit_api_method
+      params_keys = params.keys
 
       if !fitbit_api_method
         api_error = "#{params['api-method']} is not a valid Fitbit API method." 
-      elsif missing_required_parameters? required_parameters, params
-        api_error = required_parameters_error(required_parameters, api_method, params.keys)
-      elsif missing_post_parameters? post_parameters, params.keys
-        api_error = post_parameters_error(post_parameters, api_method, params.keys)
-      elsif breaking_exclusive_post_parameter_rule? post_parameters, params.keys
-        api_error = exclusive_post_parameters_error(post_parameters, api_method, params.keys)
+      elsif missing_required_parameters? required_parameters, params_keys
+        api_error = required_parameters_error(required_parameters, api_method, params_keys)
+      elsif missing_post_parameters? post_parameters, params_keys
+        api_error = post_parameters_error(post_parameters, api_method, params_keys)
+      elsif breaking_exclusive_post_parameter_rule? post_parameters, params_keys
+        api_error = exclusive_post_parameters_error(post_parameters, api_method, params_keys)
       elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
         api_error = auth_error(params, api_method, fitbit_api_method['auth_required'])
       end
     end
 
-    def get_lowercase_api_methods params
+    def get_lowercase_api_method params
       api_strings = Hash[params.map { |k,v| [k, v.downcase] if k == 'api-method' }]
       api_parameters_and_headers = Hash[params.map { |k,v| [k, v] if k != 'api-method' }]
       api_strings.merge(api_parameters_and_headers)
     end
 
-    def missing_required_parameters? required, params
-      required_parameters = get_required_parameters(required, params)
-      (required) && ((required_parameters.is_a? Hash) || (params.keys & required_parameters != required_parameters))
+    def missing_required_parameters? required, params_keys
+      required_parameters = get_required_parameters(required, params_keys)
+      (required) && ((required_parameters.is_a? Hash) || 
+                      (params_keys & required_parameters != required_parameters))
     end
 
-    def get_required_parameters required_parameters, params
+    def get_required_parameters required_parameters, params_keys
       if required_parameters.is_a? Hash
         required_parameters.keys.each do |x| 
-          return required_parameters[x] if params.keys.include? x 
+          return required_parameters[x] if params_keys.include? x 
         end
       end
       required_parameters
@@ -142,10 +148,10 @@ module Fitbit
 
     def get_url_resources params, api_method
       fitbit_api_method = @@fitbit_methods[api_method]
-      dynamic_resources = fitbit_api_method['required_parameters']
-      api_ids = get_required_parameters(dynamic_resources, params) 
+      required_parameters = fitbit_api_method['required_parameters']
+      api_ids = get_required_parameters(required_parameters, params.keys) 
       resources = fitbit_api_method['resources']
-      api_resources = get_required_parameters(resources, params)
+      api_resources = get_required_parameters(resources, params.keys)
 
       api_resources.each do |x|
         i = api_resources.index(x)
@@ -175,6 +181,42 @@ module Fitbit
     end
 
     @@api_version = 1
+
+    @@resource_paths = [
+      'activities/calories',
+      'activities/caloriesBMR',
+      'activities/steps',
+      'activities/distance',
+      'activities/floors',
+      'activities/elevation',
+      'activities/minutesSedentary',
+      'activities/minutesLightlyActive',
+      'activities/minutesFairlyActive',
+      'activities/minutesVeryActive',
+      'activities/activityCalories',
+      'activities/tracker/calories',
+      'activities/tracker/steps',
+      'activities/tracker/distance',
+      'activities/tracker/floors',
+      'activities/tracker/minutesSedentary',
+      'activities/tracker/minutesLightlyActive',
+      'activities/tracker/minutesFairlyActive',
+      'activities/tracker/minutesVeryActive',
+      'activities/tracker/activityCalories',
+      'body/weight',
+      'body/bmi',
+      'body/fat',
+      'foods/log/caloriesIn',
+      'foods/log/water',
+      'sleep/startTime',
+      'sleep/timeInBed',
+      'sleep/minutesAsleep',
+      'sleep/awakeningsCount',
+      'sleep/minutesAwake',
+      'sleep/minutesToFallAsleep',
+      'sleep/minutesAfterWakeup',
+      'sleep/efficiency'
+    ]
 
     @@fitbit_methods = {
       'api-search-foods' => {
@@ -515,8 +557,20 @@ module Fitbit
         'required_parameters' => ['date'],
         'resources'           => ['user', '-', 'sleep', 'date', '<date>'],
       },
+      'api-get-time-series' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'required_parameters' => {
+          'end-date'  => ['base-date', 'end-date', 'resource-path'],
+          'period'    => ['base-date', 'end-date', 'resource-path'],
+        },
+        'resources'           => {
+          'end-date'  => ['user', '-', '<resource-path>', 'date', '<base-date>', '<end-date>'],
+          'period'    => ['user', '-', '<resource-path>', 'date', '<base-date>', '<period>'],
+        },
+      },
     }
-
   end
 
 end

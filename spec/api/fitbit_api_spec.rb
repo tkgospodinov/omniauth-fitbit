@@ -15,7 +15,7 @@ describe Fitbit::Api do
       ([*('A'..'Z'),*('0'..'9')]-%w(0 1 I O)).sample(length).join
     when :fixed_date
       today = Date.today
-      DateTime.strptime(today.to_s, '%Y-%m-%d').to_s
+      today.strftime('%Y-%m-%d').squeeze(' ')
     when :date_range
       base_date = Date.today
       end_date = base_date + rand(365)
@@ -26,6 +26,8 @@ describe Fitbit::Api do
       [number_of, types.sample(1)].join
     when :response_format
       random_format = ['json', 'xml'].sample
+    when :resource_path
+      subject.get_resource_paths.sample
     end
   end
 
@@ -116,6 +118,7 @@ describe Fitbit::Api do
     @food_log_id = random_data(:fitbit_id)
     @heart_log_id = random_data(:fitbit_id)
     @period = random_data(:period)
+    @resource_path = random_data(:resource_path)
     @sleep_log_id = random_data(:fitbit_id)
     @user_id = random_data(:fitbit_id)
     @water_log_id = random_data(:fitbit_id)
@@ -1571,6 +1574,34 @@ describe Fitbit::Api do
 
     it 'should create API-Get-Sleep OAuth request' do
       oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+  end
+
+  context 'API-Get-Time-Series method' do
+    before(:each) do
+      @api_method = 'api-get-time-series' 
+      @api_url = "/1/user/-/#{@resource_path}/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
+      @params = {
+        'api-method'            => 'API-Get-Time-Series',
+        'response-format'       => @response_format,
+        'base-date' => @date_range[0],
+        'end-date'  => @date_range[1],
+        'resource-path' => @resource_path,
+      }
+    end
+
+    it 'should create API-Get-Time-Series OAuth request' do
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
 
