@@ -26,6 +26,7 @@ module Fitbit
       required_parameters = fitbit_api_method['required_parameters'] if fitbit_api_method
       post_parameters = fitbit_api_method['post_parameters'] if fitbit_api_method
       optional_required_parameters = fitbit_api_method['required_if'] if fitbit_api_method
+      one_required_optional_parameters = fitbit_api_method['one_required_optional'] if fitbit_api_method
       params_keys = params.keys
 
       if !fitbit_api_method
@@ -40,6 +41,8 @@ module Fitbit
         api_error = exclusive_post_parameters_error(post_parameters, api_method, params_keys)
       elsif missing_optional_required_parameters? optional_required_parameters, params_keys
         api_error = optional_required_parameters_error(optional_required_parameters, api_method, params_keys)
+      elsif missing_one_required_optional_parameter? one_required_optional_parameters, params_keys
+        "#{api_method} requires at least one of the following POST parameters: #{one_required_optional_parameters}."
       elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
         api_error = auth_error(params, api_method, fitbit_api_method['auth_required'])
       end
@@ -108,6 +111,15 @@ module Fitbit
       false
     end
 
+    def missing_one_required_optional_parameter? one_required_optional_parameters, params_keys
+      error = false
+      if one_required_optional_parameters
+        one_required = one_required_optional_parameters & params_keys
+        error = true if one_required.length == 0
+      end
+      error
+    end
+
     def get_exclusive_post_parameters post_parameters
       exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } if post_parameters 
       exclusive_post_parameters.flatten if exclusive_post_parameters
@@ -137,7 +149,7 @@ module Fitbit
     end
 
     def post_parameters_error required, api_method, supplied
-      "#{api_method} requires POST Parameters #{required}. You're missing #{required-supplied}."
+      "#{api_method} requires POST parameters #{required}. You're missing #{required-supplied}."
     end
 
     def required_exclusive_post_parameters_error required, api_method
@@ -150,7 +162,7 @@ module Fitbit
       exclusive = get_exclusive_post_parameters(post_parameters)
       all_supplied = exclusive & supplied
       all_supplied_string = all_supplied.map { |data| "'#{data}'" }.join(' AND ')
-      "#{api_method} allows only one of these POST Parameters #{exclusive}. You used #{all_supplied_string}."
+      "#{api_method} allows only one of these POST parameters #{exclusive}. You used #{all_supplied_string}."
     end
 
     def optional_required_parameters_error optional_required_parameters, api_method, supplied
@@ -648,6 +660,14 @@ module Fitbit
         'http_method'         => 'post',
         'post_parameters'     => ['fat', 'date'],
         'resources'           => ['user', '-', 'body', 'log', 'fat'],
+      },
+      'api-log-body-measurements' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'one_required_optional' => ['bicep','calf','chest','fat','forearm','hips','neck','thigh','waist','weight'],
+        'post_parameters'     => ['date'],
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'body'],
       },
     }
   end

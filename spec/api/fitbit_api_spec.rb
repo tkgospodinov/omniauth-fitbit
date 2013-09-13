@@ -43,15 +43,17 @@ describe Fitbit::Api do
     exclusive_data = get_exclusive_data(api_method, 'post_parameters')
     case data_type
     when 'post_parameters'
-      "#{api_method} requires POST Parameters #{required_data}. You're missing #{missing_data}."
+      "#{api_method} requires POST parameters #{required_data}. You're missing #{missing_data}."
     when 'required_exclusive_post_parameters'
       "#{api_method} requires one of these POST parameters: #{exclusive_data}."
     when 'exclusive_post_parameters'
       extra_data = get_extra_data(exclusive_data)
-      "#{api_method} allows only one of these POST Parameters #{exclusive_data}. You used #{extra_data}."
+      "#{api_method} allows only one of these POST parameters #{exclusive_data}. You used #{extra_data}."
     when 'required_if'
       required_if = required.values.flatten
       "#{api_method} requires #{required_if} when you use #{required.keys}."
+    when 'one_required_optional'
+      "#{api_method} requires at least one of the following POST parameters: #{required}."
     when 'required_parameters'
       get_required_parameters_error(api_method, required, required_data, missing_data)
     when 'resource_path'
@@ -1685,6 +1687,39 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required POST Parameters are missing' do
       error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Log-Body-Measurements method' do
+    before(:each) do
+      @api_method = 'api-log-body-measurements'
+      @api_url = "/1/user/-/body.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Log-Body-Measurements',
+        'bicep'               => '1.00',
+        'date'                => @date,
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Log-Body-Measurements OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if required POST Parameters are missing' do
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if none of the _one_required_optional_ POST Parameters are used' do
+      @params.delete('bicep')
+      error_message = helpful_errors(@api_method, 'one_required_optional', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
