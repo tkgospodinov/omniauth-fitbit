@@ -669,6 +669,12 @@ module Fitbit
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'body'],
       },
+      'api-log-body-weight' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['weight', 'date'],
+        'resources'           => ['user', '-', 'body', 'log', 'weight'],
+      },
     }
   end
 
