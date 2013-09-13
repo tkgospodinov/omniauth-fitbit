@@ -98,6 +98,7 @@ describe Fitbit::Api do
   end
 
   before(:all) do
+    @params = {}
     @consumer_key = random_data(:token)
     @consumer_secret = random_data(:token)
     @auth_token = random_data(:token)
@@ -1586,12 +1587,27 @@ describe Fitbit::Api do
         'response-format'       => @response_format,
         'base-date' => @date_range[0],
         'end-date'  => @date_range[1],
+        'period'    => @period,
         'resource-path' => @resource_path,
       }
     end
 
-    it 'should create API-Get-Time-Series OAuth request' do
+    it 'should create API-Get-Time-Series <base-date>/<end-date> OAuth request' do
+      @params.delete('period')
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should create API-Get-Time-Series <base-date>/<period> OAuth request' do
+      @params.delete('end-date')
+      @api_url = "/1/user/-/#{@resource_path}/date/#{@date_range[0]}/#{@period}.#{@response_format}"
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should create API-Get-Time-Series <base-date>/<period> OAuth request with _user-id_ instead of auth tokens' do
+      @params.delete('end-date')
+      @params['user-id'] = @user_id
+      @api_url = "/1/user/#{@user_id}/#{@resource_path}/date/#{@date_range[0]}/#{@period}.#{@response_format}"
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 
     it 'should return a helpful error if required parameters are missing' do

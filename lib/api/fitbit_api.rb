@@ -563,7 +563,7 @@ module Fitbit
         'request_headers'     => ['Accept-Language'],
         'required_parameters' => {
           'end-date'  => ['base-date', 'end-date', 'resource-path'],
-          'period'    => ['base-date', 'end-date', 'resource-path'],
+          'period'    => ['base-date', 'period', 'resource-path'],
         },
         'resources'           => {
           'end-date'  => ['user', '-', '<resource-path>', 'date', '<base-date>', '<end-date>'],
