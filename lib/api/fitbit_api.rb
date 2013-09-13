@@ -673,7 +673,15 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['weight', 'date'],
+        'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'body', 'log', 'weight'],
+      },
+      'api-log-food' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => [['foodId', 'foodName'], 'mealTypeId', 'unitId', 'amount', 'date'],
+        'request_headers'     => ['Accept-Locale'],
+        'resources'           => ['user', '-', 'foods', 'log'],
       },
     }
   end

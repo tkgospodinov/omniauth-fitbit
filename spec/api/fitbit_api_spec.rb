@@ -1756,6 +1756,53 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Log-Food method' do
+    before(:each) do
+      @api_method = 'api-log-food'
+      @api_url = "/1/user/-/foods/log.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Log-Food',
+        'date'                => @date,
+        'foodId'              => @food_id,
+        'mealTypeId'          => '2',
+        'unitId'              => '1',
+        'amount'              => '1.00',
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Log-Food OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should create API-Log-Food OAuth request with foodName instead of foodId' do
+      @params.delete('foodId')
+      @params['foodName'] = @activity_name
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if both _foodId and _foodName exclusive POST Parameters are used' do
+      @params['foodName'] = @activity_name
+      error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
+    end
+
+    it 'should return a helpful error if neither _foodId_ nor _foodName exclusive POST Parameters are used' do
+      @params.delete('foodId')
+      error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if required POST Parameters are missing' do
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
 
 
 
