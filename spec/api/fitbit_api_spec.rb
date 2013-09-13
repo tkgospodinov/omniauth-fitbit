@@ -49,6 +49,9 @@ describe Fitbit::Api do
     when 'exclusive_post_parameters'
       extra_data = get_extra_data(exclusive_data)
       "#{api_method} allows only one of these POST Parameters #{exclusive_data}. You used #{extra_data}."
+    when 'required_if'
+      required_if = required.values.flatten
+      "#{api_method} requires #{required_if} when you use #{required.keys}."
     when 'required_parameters'
       get_required_parameters_error(api_method, required, required_data, missing_data)
     when 'resource_path'
@@ -350,7 +353,7 @@ describe Fitbit::Api do
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
-    it 'should return a helpful error if neither _invitedUserEmail_ and _invitedUserId_ exclusive POST Parameters are used' do
+    it 'should return a helpful error if neither _invitedUserEmail_ nor _invitedUserId_ exclusive POST Parameters are used' do
       @params.delete('invitedUserEmail')
       error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
@@ -1602,6 +1605,7 @@ describe Fitbit::Api do
     it 'should create API-Log-Activity OAuth request with activityName instead of activityId' do
       @params.delete('activityId')
       @params['activityName'] = @activity_name
+      @params['manualCalories'] = '1000'
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
@@ -1614,6 +1618,13 @@ describe Fitbit::Api do
     it 'should return a helpful error if neither _activityId_ nor _activityName_ exclusive POST Parameters are used' do
       @params.delete('activityId')
       error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if _activityName_ is used without _manualCalories_' do
+      @params.delete('activityId')
+      @params['activityName'] = @activity_name
+      error_message = helpful_errors(@api_method, 'required_if', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 

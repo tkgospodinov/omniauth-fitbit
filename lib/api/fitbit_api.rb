@@ -25,6 +25,7 @@ module Fitbit
       fitbit_api_method = @@fitbit_methods[api_method]
       required_parameters = fitbit_api_method['required_parameters'] if fitbit_api_method
       post_parameters = fitbit_api_method['post_parameters'] if fitbit_api_method
+      optional_required_parameters = fitbit_api_method['required_if'] if fitbit_api_method
       params_keys = params.keys
 
       if !fitbit_api_method
@@ -37,6 +38,8 @@ module Fitbit
         api_error = required_exclusive_post_parameters_error(post_parameters, api_method)
       elsif breaking_exclusive_post_parameter_rule? post_parameters, params_keys
         api_error = exclusive_post_parameters_error(post_parameters, api_method, params_keys)
+      elsif missing_optional_required_parameters? optional_required_parameters, params_keys
+        api_error = optional_required_parameters_error(optional_required_parameters, api_method, params_keys)
       elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
         api_error = auth_error(params, api_method, fitbit_api_method['auth_required'])
       end
@@ -94,6 +97,17 @@ module Fitbit
       count > 1
     end
 
+    def missing_optional_required_parameters? optional_required_parameters, params_keys
+      if optional_required_parameters
+        optional_required_parameters.each do |k,v|
+          if (params_keys.include? k) && (params_keys & v != v)
+            return true
+          end
+        end
+      end
+      false
+    end
+
     def get_exclusive_post_parameters post_parameters
       exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } if post_parameters 
       exclusive_post_parameters.flatten if exclusive_post_parameters
@@ -137,6 +151,11 @@ module Fitbit
       all_supplied = exclusive & supplied
       all_supplied_string = all_supplied.map { |data| "'#{data}'" }.join(' AND ')
       "#{api_method} allows only one of these POST Parameters #{exclusive}. You used #{all_supplied_string}."
+    end
+
+    def optional_required_parameters_error optional_required_parameters, api_method, supplied
+      required_if = optional_required_parameters.values.flatten
+      "#{api_method} requires #{required_if} when you use #{optional_required_parameters.keys}."
     end
 
     def auth_error params, api_method, auth_required
@@ -615,6 +634,7 @@ module Fitbit
         'http_method'         => 'post',
         'post_parameters'     => [['activityId', 'activityName'], 'startTime', 'durationMillis', 'date'],
         'request_headers'     => ['Accept-Locale', 'Accept-Language'],
+        'required_if'         => { 'activityName' => ['manualCalories'] },
         'resources'           => ['user', '-', 'activities'],
       },
     }
