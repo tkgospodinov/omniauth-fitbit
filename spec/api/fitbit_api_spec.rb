@@ -1625,13 +1625,6 @@ describe Fitbit::Api do
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
-    it 'should return a helpful error if resource-path is invalid' do
-      @params.delete('resource-path')
-      @params['resource-path'] = 'invalidResourcePath'
-      error_message = helpful_errors(@api_method, 'resource_path', @params)
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret) }.should raise_error(RuntimeError, error_message)
-    end
-
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)

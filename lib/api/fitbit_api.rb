@@ -37,8 +37,6 @@ module Fitbit
         api_error = exclusive_post_parameters_error(post_parameters, api_method, params_keys)
       elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
         api_error = auth_error(params, api_method, fitbit_api_method['auth_required'])
-      elsif invalid_resource_path? api_method, params['resource-path']
-        api_error = "#{params['resource-path']} is not a valid Fitbit #{api_method} resource-path."
       end
     end
 
