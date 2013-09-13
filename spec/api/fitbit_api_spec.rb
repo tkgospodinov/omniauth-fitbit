@@ -7,19 +7,18 @@ describe Fitbit::Api do
 
   def random_data data_type
     case data_type
-    when :token
-      length = 30
-      rand(36**length).to_s(36)
+    when :activity_name
+      ['biking', 'jogging', 'yoga', 'jazzercise'].sample
+    when :date_range
+      base_date = Date.today
+      end_date = base_date + rand(365)
+      [base_date, end_date].map { |day| day.strftime('%y-%m-%d').squeeze(' ') }
     when :fitbit_id
       length = 7
       ([*('A'..'Z'),*('0'..'9')]-%w(0 1 I O)).sample(length).join
     when :fixed_date
       today = Date.today
       today.strftime('%Y-%m-%d').squeeze(' ')
-    when :date_range
-      base_date = Date.today
-      end_date = base_date + rand(365)
-      [base_date, end_date].map { |day| day.strftime('%y-%m-%d').squeeze(' ') }
     when :period
       number_of = rand(31)
       types = ['d', 'w', 'm']
@@ -28,6 +27,12 @@ describe Fitbit::Api do
       random_format = ['json', 'xml'].sample
     when :resource_path
       subject.get_resource_paths.sample
+    when :time
+      current_time = Time.now
+      current_time.strftime('%H:%M').squeeze(' ')
+    when :token
+      length = 30
+      rand(36**length).to_s(36)
     end
   end
 
@@ -35,11 +40,13 @@ describe Fitbit::Api do
     required = get_required_data(api_method, data_type)
     required_data = get_required_parameters(required, supplied)
     missing_data = delete_required_data(required_data, data_type) if required_data
+    exclusive_data = get_exclusive_data(api_method, 'post_parameters')
     case data_type
     when 'post_parameters'
       "#{api_method} requires POST Parameters #{required_data}. You're missing #{missing_data}."
+    when 'required_exclusive_post_parameters'
+      "#{api_method} requires one of these POST parameters: #{exclusive_data}."
     when 'exclusive_post_parameters'
-      exclusive_data = get_exclusive_data(api_method, 'post_parameters')
       extra_data = get_extra_data(exclusive_data)
       "#{api_method} allows only one of these POST Parameters #{exclusive_data}. You used #{extra_data}."
     when 'required_parameters'
@@ -103,8 +110,7 @@ describe Fitbit::Api do
   end
 
   def get_extra_data exclusive_data
-    extra_data = exclusive_data.each { |exclusive| @params[exclusive] = 'cheese' } if exclusive_data
-    extra_data.map { |data| "'#{data}'" }.join(' AND ')
+    exclusive_data.map { |data| "'#{data}'" }.join(' AND ')
   end
 
   before(:all) do
@@ -118,6 +124,7 @@ describe Fitbit::Api do
     #generate useful random data for tests
     @activity_id = random_data(:fitbit_id)
     @activity_log_id = random_data(:fitbit_id)
+    @activity_name = random_data(:activity_name)
     @alarm_id = random_data(:fitbit_id)
     @body_fat_log_id = random_data(:fitbit_id)
     @body_weight_log_id = random_data(:fitbit_id)
@@ -131,6 +138,7 @@ describe Fitbit::Api do
     @period = random_data(:period)
     @resource_path = random_data(:resource_path)
     @sleep_log_id = random_data(:fitbit_id)
+    @time = random_data(:time)
     @user_id = random_data(:fitbit_id)
     @water_log_id = random_data(:fitbit_id)
   end
@@ -337,7 +345,14 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if both _invitedUserEmail_ and _invitedUserId_ exclusive POST Parameters are used' do
+      @params['invitedUserId'] = @user_id
       error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if neither _invitedUserEmail_ and _invitedUserId_ exclusive POST Parameters are used' do
+      @params.delete('invitedUserEmail')
+      error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
@@ -1557,6 +1572,53 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Log-Activity method' do
+    before(:each) do
+      @api_method = 'api-log-activity'
+      @api_url = "/1/user/-/activities.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Log-Activity',
+        'activityId'          => @activity_id,
+        'startTime'           => @time,
+        'durationMillis'      => '10000',
+        'date'                => @date,
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Log-Activity OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should create API-Log-Activity OAuth request with activityName instead of activityId' do
+      @params.delete('activityId')
+      @params['activityName'] = @activity_name
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if both _activityId_ and _activityName_ exclusive POST Parameters are used' do
+      @params['activityName'] = @activity_name
+      error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if neither _activityId_ nor _activityName_ exclusive POST Parameters are used' do
+      @params.delete('activityId')
+      error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if required POST Parameters are missing' do
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
