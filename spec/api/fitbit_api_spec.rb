@@ -733,6 +733,12 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Activities OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/activities/date/#{@date}.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
@@ -740,30 +746,6 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Activities method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-activities' 
-      @api_url = "/1/user/#{@user_id}/activities/date/#{@date}.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Activities',
-        'date'            => @date,
-        'user-id'         => @user_id,
-        'Accept-Locale'   => 'en_US',
-        'Accept-Language' => 'en_US',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Activities OAuth request' do
-      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should return a helpful error if required parameters are missing' do
-      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
@@ -826,26 +808,15 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Activity-Stats OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/activities.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Activity-Stats method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-activity-stats' 
-      @api_url = "/1/user/#{@user_id}/activities.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Activity-Stats',
-        'user-id'     => @user_id,
-        'Accept-Language' => 'en_US',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Activity-Stats OAuth request' do
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -885,26 +856,15 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Badges OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/badges.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+
     it 'should return a helpful error if auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Badges method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-activities' 
-      @api_url = "/1/user/#{@user_id}/badges.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Badges',
-        'user-id'         => @user_id,
-        'Accept-Locale'   => 'en_US',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Badges OAuth request' do
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -1012,26 +972,15 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Body-Measurements OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/body/date/#{@date}.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Body-Measurements method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-body-measurements' 
-      @api_url = "/1/user/#{@user_id}/body/date/#{@date}.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Body-Measurements',
-        'date'            => @date,
-        'user-id'         => @user_id,
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Body-Measurements OAuth request' do
-      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
   end
 
@@ -1115,6 +1064,12 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Device OAuth request with _user-id_ instead auth tokens' do
+      @api_url = "/1/user/#{@user_id}/devices/#{@device_id}.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
@@ -1122,29 +1077,6 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Device method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @params = {}
-      @api_method = 'api-get-device' 
-      @api_url = "/1/user/#{@user_id}/devices/#{@device_id}.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Device',
-        'device-id'       => @device_id,
-        'user-id'         => @user_id,
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Device OAuth request' do
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-    end
-
-    it 'should return a helpful error if required parameters are missing' do
-      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
@@ -1184,26 +1116,15 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Favorite-Activities OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/activities/favorite.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Favorite-Activities method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-favorite-activities' 
-      @api_url = "/1/user/#{@user_id}/activities/favorite.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Favorite-Activities',
-        'user-id'         => @user_id,
-        'Accept-Locale'   => 'en_US',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Favorite-Activities OAuth request' do
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -1285,6 +1206,12 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Foods OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/foods/log/date/#{@date}.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
@@ -1292,29 +1219,6 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Foods method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-foods' 
-      @api_url = "/1/user/#{@user_id}/foods/log/date/#{@date}.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Foods',
-        'date'            => @date,
-        'user-id'         => @user_id,
-        'Accept-Locale'   => 'en_US',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Foods OAuth request' do
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-    end
-
-    it 'should return a helpful error if required parameters are missing' do
-      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
@@ -1393,26 +1297,15 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Friends OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/friends.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Friends method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-friends' 
-      @api_url = "/1/user/#{@user_id}/friends.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Friends',
-        'user-id'         => @user_id,
-        'Accept-Language'       => 'en_US',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Friends OAuth request' do
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -1565,26 +1458,15 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
+    it 'should create API-Get-Sleep OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/sleep/date/#{@date}.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-  context 'API-Get-Sleep method with _user-id_ instead of auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-friends' 
-      @api_url = "/1/user/#{@user_id}/sleep/date/#{@date}.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Sleep',
-        'date'              => @date,
-        'user-id'         => @user_id,
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Sleep OAuth request' do
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
@@ -1623,6 +1505,32 @@ describe Fitbit::Api do
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Get-User-Info method' do
+    before(:each) do
+      @api_method = 'api-get-user-info' 
+      @api_url = "/1/user/-/profile.#{@response_format}"
+      @params = {
+        'api-method'        => 'API-Get-User-Info',
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Get-User-Info OAuth request' do
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should create API-Get-User-Info OAuth request with _user-id_ instead of auth tokens' do
+      @api_url = "/1/user/#{@user_id}/profile.#{@response_format}"
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 
     it 'should return a helpful error if _user-id_ and auth_tokens are missing' do

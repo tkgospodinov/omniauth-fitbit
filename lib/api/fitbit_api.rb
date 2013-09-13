@@ -579,6 +579,12 @@ module Fitbit
           'period'    => ['user', '-', '<resource-path>', 'date', '<base-date>', '<period>'],
         },
       },
+      'api-get-user-info' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'profile'],
+      },
     }
   end
 
