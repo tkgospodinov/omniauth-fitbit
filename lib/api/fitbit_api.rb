@@ -585,6 +585,13 @@ module Fitbit
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'profile'],
       },
+      'api-get-water' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Language'],
+        'required_parameters' => ['date'],
+        'resources'           => ['user', '-', 'foods', 'log', 'water', 'date', '<date>'],
+      },
     }
   end
 

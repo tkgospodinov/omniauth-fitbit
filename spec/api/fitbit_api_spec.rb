@@ -1539,6 +1539,34 @@ describe Fitbit::Api do
     end
   end
 
+  context 'API-Get-Water method' do
+    before(:each) do
+      @api_method = 'api-get-water' 
+      @api_url = "/1/user/-/foods/log/water/date/#{@date}.#{@response_format}"
+      @params = {
+        'api-method'        => 'API-Get-Water',
+        'Accept-Language'       => 'en_US',
+        'date'              => @date,
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Get-Water OAuth request' do
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if required parameters are missing' do
+      error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+
 
 
 
