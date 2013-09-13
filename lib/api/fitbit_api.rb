@@ -703,6 +703,13 @@ module Fitbit
         'post_parameters'     => ['startTime', 'duration', 'date'],
         'resources'           => ['user', '-', 'sleep'],
       },
+      'api-log-water' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['amount', 'date'],
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'foods', 'log', 'water'],
+      },
     }
   end
 
