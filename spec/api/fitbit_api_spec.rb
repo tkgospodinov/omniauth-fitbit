@@ -1863,12 +1863,40 @@ describe Fitbit::Api do
         'api-method'          => 'API-Log-Heart-Rate',
         'date'                => @date,
         'heartRate'           => '1',
-        'response-format'     => @response_format,
         'tracker'             => "Resting Heart Rate",
+        'response-format'     => @response_format,
       }
     end
 
     it 'should create API-Log-Heart-Rate OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if required POST Parameters are missing' do
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Log-Sleep method' do
+    before(:each) do
+      @api_method = 'api-log-sleep'
+      @api_url = "/1/user/-/sleep.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Log-Sleep',
+        'date'                => @date,
+        'startTime'           => @time,
+        'duration'            => '1000',
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Log-Sleep OAuth request' do
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 

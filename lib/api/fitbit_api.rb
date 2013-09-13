@@ -697,6 +697,12 @@ module Fitbit
         'post_parameters'     => ['tracker', 'heartRate', 'date'],
         'resources'           => ['user', '-', 'heart'],
       },
+      'api-log-sleep' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['startTime', 'duration', 'date'],
+        'resources'           => ['user', '-', 'sleep'],
+      },
     }
   end
 
