@@ -683,6 +683,14 @@ module Fitbit
         'request_headers'     => ['Accept-Locale'],
         'resources'           => ['user', '-', 'foods', 'log'],
       },
+      'api-log-glucose' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => [['hbac1c', 'tracker'], 'date'],
+        'request_headers'     => ['Accept-Language'],
+        'required_if'         => { 'tracker' => ['glucose'] },
+        'resources'           => ['user', '-', 'glucose'],
+      },
     }
   end
 
