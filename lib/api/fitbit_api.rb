@@ -643,6 +643,12 @@ module Fitbit
         'post_parameters'     => ['systolic', 'diastolic', 'date'],
         'resources'           => ['user', '-', 'bp'],
       },
+      'api-log-body-fat' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['fat', 'date'],
+        'resources'           => ['user', '-', 'body', 'log', 'fat'],
+      },
     }
   end
 
