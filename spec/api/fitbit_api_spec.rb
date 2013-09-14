@@ -2076,6 +2076,33 @@ describe Fitbit::Api do
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
+
+  context 'API-Update-User-Info method' do
+    before(:each) do
+      @api_method = 'api-update-user-info'
+      @api_url = "/1/user/-/profile.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Update-User-Info',
+        'gender'              => 'MALE',
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Update-User-Info OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if none of the _one_required_optional_ POST Parameters are used' do
+      @params.delete('gender')
+      error_message = helpful_errors(@api_method, 'one_required_optional', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
     
   def oauth_unauthenticated http_method, api_url, consumer_key, consumer_secret, params
     stub_request(http_method, "api.fitbit.com#{api_url}")

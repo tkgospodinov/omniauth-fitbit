@@ -738,6 +738,17 @@ module Fitbit
         'request_headers'     => ['Accept-Locale', 'Accept-Language'],
         'resources'           => ['user', '-', 'foods', 'log', 'goal'],
       },
+      'api-update-user-info' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'one_required_optional' => [
+          'gender','birthday','height','nickname','aboutMe','fullname','country','state','city',
+          'strideLengthWalking','strideLengthRunning','weightUnit','heightUnit','waterUnit','glucoseUnit',
+          'timezone','foodsLocale','locale','localeLang','localeCountry'
+        ],
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'profile'],
+      },
     }
   end
 
