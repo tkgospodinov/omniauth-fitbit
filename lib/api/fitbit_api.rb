@@ -718,6 +718,13 @@ module Fitbit
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'activities', 'goals', 'daily'],
       },
+      'api-update-activity-weekly-goals' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'one_required_optional' => ['steps','distance','floors'],
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'activities', 'goals', 'weekly'],
+      },
     }
   end
 
