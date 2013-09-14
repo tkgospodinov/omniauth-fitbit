@@ -725,6 +725,12 @@ module Fitbit
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'activities', 'goals', 'weekly'],
       },
+      'api-update-fat-goal' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['fat'],
+        'resources'           => ['user', '-', 'body', 'log', 'fat', 'goal'],
+      },
     }
   end
 

@@ -2012,6 +2012,32 @@ describe Fitbit::Api do
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
+
+  context 'API-Update-Fat-Goal method' do
+    before(:each) do
+      @api_method = 'api-update-fat-goal'
+      @api_url = "/1/user/-/body/log/fat/goal.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Update-Fat-Goal',
+        'fat'                 => '1.00',
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Update-Fat-Goal OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if required POST Parameters are missing' do
+      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
     
   def oauth_unauthenticated http_method, api_url, consumer_key, consumer_secret, params
     stub_request(http_method, "api.fitbit.com#{api_url}")
