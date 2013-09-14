@@ -749,6 +749,12 @@ module Fitbit
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'profile'],
       },
+      'api-update-weight-goal' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => ['startDate', 'startWeight'],
+        'resources'           => ['user', '-', 'body', 'log', 'weight', 'goal'],
+      },
     }
   end
 
