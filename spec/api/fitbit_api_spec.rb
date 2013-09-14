@@ -2038,6 +2038,44 @@ describe Fitbit::Api do
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
+
+  context 'API-Update-Food-Goals method' do
+    before(:each) do
+      @api_method = 'api-update-food-goals'
+      @api_url = "/1/user/-/foods/log/goal.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Update-Food-Goals',
+        'calories'            => '1000',
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Update-Food-Goals OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should create API-Log-Glucose OAuth request with intensity instead of calories' do
+      @params.delete('calories')
+      @params['intensity'] = @activity_name
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if both _calories and _intensity exclusive POST Parameters are used' do
+      @params['intensity'] = @activity_name
+      error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
+    end
+
+    it 'should return a helpful error if neither _calories nor _intensity exclusive POST Parameters are used' do
+      @params.delete('calories')
+      error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
     
   def oauth_unauthenticated http_method, api_url, consumer_key, consumer_secret, params
     stub_request(http_method, "api.fitbit.com#{api_url}")

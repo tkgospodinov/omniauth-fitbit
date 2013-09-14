@@ -731,6 +731,13 @@ module Fitbit
         'post_parameters'     => ['fat'],
         'resources'           => ['user', '-', 'body', 'log', 'fat', 'goal'],
       },
+      'api-update-food-goals' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'post_parameters'     => [['calories', 'intensity']],
+        'request_headers'     => ['Accept-Locale', 'Accept-Language'],
+        'resources'           => ['user', '-', 'foods', 'log', 'goal'],
+      },
     }
   end
 
