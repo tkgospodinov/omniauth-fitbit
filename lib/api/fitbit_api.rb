@@ -277,12 +277,6 @@ module Fitbit
     ]
 
     @@fitbit_methods = {
-      'api-search-foods' => {
-        'auth_required'       => false,
-        'http_method'         => 'get',
-        'required_parameters' => ['query'],
-        'resources'           => ['foods', 'search'],
-      },
       'api-accept-invite' => {
         'auth_required'       => true,
         'http_method'         => 'post',
@@ -709,6 +703,20 @@ module Fitbit
         'post_parameters'     => ['amount', 'date'],
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'foods', 'log', 'water'],
+      },
+      'api-search-foods' => {
+        'auth_required'       => false,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale'],
+        'required_parameters' => ['query'],
+        'resources'           => ['foods', 'search'],
+      },
+      'api-update-activity-daily-goals' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'one_required_optional' => ['caloriesOut','activeMinutes','floors','distance','steps'],
+        'request_headers'     => ['Accept-Language'],
+        'resources'           => ['user', '-', 'activities', 'goals', 'daily'],
       },
     }
   end

@@ -1938,18 +1938,6 @@ describe Fitbit::Api do
     end
   end
 
-
-
-
-
-
-
-
-
-
-
-
-
   context 'API-Search-Foods method' do
     before(:each) do
       @api_method = 'api-search-foods'
@@ -1967,6 +1955,33 @@ describe Fitbit::Api do
 
     it 'should return a helpful error if required parameters are missing' do
       error_message = helpful_errors(@api_method, 'required_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'API-Update-Activity-Daily-Goals method' do
+    before(:each) do
+      @api_method = 'api-update-activity-daily-goals'
+      @api_url = "/1/user/-/activities/goals/daily.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Update-Activity-Daily-Goals',
+        'caloriesOut'         => '1000',
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'should create API-Update-Activity-Daily-Goals OAuth request' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'should return a helpful error if none of the _one_required_optional_ POST Parameters are used' do
+      @params.delete('caloriesOut')
+      error_message = helpful_errors(@api_method, 'one_required_optional', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+
+    it 'should return a helpful error if auth_tokens are missing' do
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
