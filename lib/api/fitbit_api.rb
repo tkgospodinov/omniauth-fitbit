@@ -45,8 +45,6 @@ module Fitbit
         "#{api_method} requires at least one of the following POST parameters: #{required['one_required_optional']}."
       elsif required['auth_required'] && (auth_token == "" || auth_secret == "")
         auth_error(api_method, required['auth_required'], params_keys.include?('user-id'))
-      else
-        nil
       end
     end
 
@@ -95,7 +93,6 @@ module Fitbit
           count += 1 if exclusive_post_parameters.include? x
         end
       end
-
       count > 1
     end
 
@@ -125,10 +122,10 @@ module Fitbit
           error << "(#{count}) #{required[x]} "
           count += 1
         end
+        error
       else
-        error = "#{api_method} requires #{required}. You're missing #{required-supplied}."
+        "#{api_method} requires #{required}. You're missing #{required-supplied}."
       end
-      error
     end
 
     def post_parameters_error required, api_method, supplied
@@ -163,14 +160,14 @@ module Fitbit
 
     def build_request consumer_key, consumer_secret, auth_token, auth_secret
       fitbit = Fitbit::Api.new :fitbit, consumer_key, consumer_secret
-      access_token = OAuth::AccessToken.new fitbit.consumer, auth_token, auth_secret
+      OAuth::AccessToken.new fitbit.consumer, auth_token, auth_secret
     end
 
     def send_api_request params, api_method, access_token
       fitbit = @@fitbit_methods[api_method]
       request_url = build_url(params, fitbit)
       request_http_method = fitbit['http_method']
-      request_headers = get_request_headers(params, fitbit)
+      request_headers = get_request_headers(params, fitbit['request-headers'])
       access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
     end
 
@@ -179,11 +176,11 @@ module Fitbit
       api_url_resources = get_url_resources(params, fitbit['required_parameters'], fitbit['resources'], fitbit['auth_required'])
       api_format = get_response_format(params['response-format'])
       api_query = uri_encode_query(params['query']) 
-      request_url = "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}"
+      "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}"
     end
     
-    def get_request_headers params, fitbit_api_method
-      available_headers = fitbit_api_method['request_headers'] & params.keys
+    def get_request_headers params, request_headers
+      available_headers = request_headers & params.keys
       Hash[params.each { |k,v| [k,v] if available_headers.include? k }] if available_headers
     end
 
@@ -191,9 +188,11 @@ module Fitbit
       params_keys = params.keys
       api_ids = get_required_parameters(required_parameters, params_keys) 
       api_resources = get_required_parameters(resources, params_keys)
+      add_ids(params, api_resources, api_ids, auth_required)
+    end
 
-      api_resources.each do |x|
-        i = api_resources.index(x)
+    def add_ids params, api_resources, api_ids, auth_required
+      api_resources.each_with_index do |x, i|
         id = x.delete "<>"
         if api_ids && (api_ids.include? id) && (!api_ids.include? x)
           api_resources[i] = params[id]
