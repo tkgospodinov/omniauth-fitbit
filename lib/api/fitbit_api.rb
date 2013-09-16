@@ -50,9 +50,8 @@ module Fitbit
     end
 
     def get_lowercase_api_method params
-      api_strings = { 'api-method' => params['api-method'].downcase }
-      api_parameters_and_headers = Hash[params.select { |k,v| [k, v] if k != 'api-method' }]
-      api_strings.merge(api_parameters_and_headers)
+      params['api-method'] = params['api-method'].downcase
+      params
     end
 
     def missing_required_parameters? required, params_keys
