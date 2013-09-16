@@ -20,17 +20,18 @@ module Fitbit
 
     private 
 
-    def get_api_errors params, api_method, auth_token, auth_secret
+    def get_api_errors params, api_method, auth_token="", auth_secret="" 
       required = @@fitbit_methods[api_method]
+      params_keys = params.keys
       if required
-        get_error_message(params, api_method, required, auth_token, auth_secret)
+        no_auth_token = true if (auth_token == "" or auth_secret == "")
+        get_error_message(params_keys, api_method, required, no_auth_token)
       else
         "#{params['api-method']} is not a valid Fitbit API method." 
       end
     end
 
-    def get_error_message params, api_method, required, auth_token, auth_secret
-      params_keys = params.keys
+    def get_error_message params_keys, api_method, required, no_auth_token
       if missing_required_parameters? required['required_parameters'], params_keys
         required_parameters_error(required['required_parameters'], api_method, params_keys)
       elsif missing_post_parameters? required['post_parameters'], params_keys
@@ -43,7 +44,7 @@ module Fitbit
         required_optional_parameters_error(required['required_if'], api_method, params_keys)
       elsif missing_one_required_optional_parameter? required['one_required_optional'], params_keys
         "#{api_method} requires at least one of the following POST parameters: #{required['one_required_optional']}."
-      elsif required['auth_required'] && (auth_token == "" || auth_secret == "")
+      elsif required['auth_required'] && no_auth_token
         auth_error(api_method, required['auth_required'], params_keys.include?('user-id'))
       end
     end
