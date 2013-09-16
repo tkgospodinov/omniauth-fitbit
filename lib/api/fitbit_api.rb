@@ -50,7 +50,7 @@ module Fitbit
     end
 
     def get_lowercase_api_method params
-      api_strings = Hash[params.map { |k,v| [k, v.downcase] if k == 'api-method' && (v.is_a? String) }]
+      api_strings = { 'api-method' => params['api-method'].downcase }
       api_parameters_and_headers = Hash[params.map { |k,v| [k, v] if k != 'api-method' }]
       api_strings.merge(api_parameters_and_headers)
     end
