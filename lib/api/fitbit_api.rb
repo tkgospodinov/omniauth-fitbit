@@ -4,7 +4,8 @@ module Fitbit
     def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
       api_params = get_lowercase_api_method(params)
       api_method = api_params['api-method']
-      api_error = get_api_errors(api_params, api_method, auth_token, auth_secret)
+      fitbit_api_method = @@fitbit_methods[api_method]
+      api_error = get_api_errors(api_params, api_method, fitbit_api_method, auth_token, auth_secret)
       raise api_error if api_error
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
       send_api_request(api_params, api_method, access_token)
@@ -20,31 +21,33 @@ module Fitbit
 
     private 
 
-    def get_api_errors params, api_method, auth_token, auth_secret
-      api_error = nil
-      fitbit_api_method = @@fitbit_methods[api_method]
-      required_parameters = fitbit_api_method['required_parameters'] if fitbit_api_method
-      post_parameters = fitbit_api_method['post_parameters'] if fitbit_api_method
-      optional_required_parameters = fitbit_api_method['required_if'] if fitbit_api_method
-      one_required_optional_parameters = fitbit_api_method['one_required_optional'] if fitbit_api_method
+    def get_api_errors params, api_method, fitbit_api_method=nil, auth_token, auth_secret
+      if fitbit_api_method
+        get_error_message(params, api_method, fitbit_api_method, auth_token, auth_secret)
+      else
+        "#{params['api-method']} is not a valid Fitbit API method." 
+      end
+    end
+
+    def get_error_message params, api_method, required, auth_token, auth_secret
       params_keys = params.keys
 
-      if !fitbit_api_method
-        api_error = "#{params['api-method']} is not a valid Fitbit API method." 
-      elsif missing_required_parameters? required_parameters, params_keys
-        api_error = required_parameters_error(required_parameters, api_method, params_keys)
-      elsif missing_post_parameters? post_parameters, params_keys
-        api_error = post_parameters_error(post_parameters, api_method, params_keys)
-      elsif missing_exclusive_post_parameters? post_parameters, params_keys
-        api_error = required_exclusive_post_parameters_error(post_parameters, api_method)
-      elsif breaking_exclusive_post_parameter_rule? post_parameters, params_keys
-        api_error = exclusive_post_parameters_error(post_parameters, api_method, params_keys)
-      elsif missing_optional_required_parameters? optional_required_parameters, params_keys
-        api_error = optional_required_parameters_error(optional_required_parameters, api_method, params_keys)
-      elsif missing_one_required_optional_parameter? one_required_optional_parameters, params_keys
-        "#{api_method} requires at least one of the following POST parameters: #{one_required_optional_parameters}."
-      elsif fitbit_api_method['auth_required'] && (auth_token == "" || auth_secret == "")
-        api_error = auth_error(params, api_method, fitbit_api_method['auth_required'])
+      if missing_required_parameters? required['required_parameters'], params_keys
+        required_parameters_error(required['required_parameters'], api_method, params_keys)
+      elsif missing_post_parameters? required['post_parameters'], params_keys
+        post_parameters_error(required['post_parameters'], api_method, params_keys)
+      elsif missing_exclusive_post_parameters? required['post_parameters'], params_keys
+        required_exclusive_post_parameters_error(required['post_parameters'], api_method)
+      elsif breaking_exclusive_post_parameter_rule? required['post_parameters'], params_keys
+        multiple_exclusive_post_parameters_error(required['post_parameters'], api_method, params_keys)
+      elsif missing_required_optional_parameters? required['required_if'], params_keys
+        required_optional_parameters_error(required['required_if'], api_method, params_keys)
+      elsif missing_one_required_optional_parameter? required['one_required_optional'], params_keys
+        "#{api_method} requires at least one of the following POST parameters: #{required['one_required_optional']}."
+      elsif required['auth_required'] && (auth_token == "" || auth_secret == "")
+        auth_error(api_method, required['auth_required'], params['user-id'])
+      else
+        nil
       end
     end
 
@@ -60,79 +63,58 @@ module Fitbit
                       (params_keys & required_parameters != required_parameters))
     end
 
-    def get_required_parameters required_parameters, params_keys
-      if required_parameters.is_a? Hash
-        required_parameters.keys.each do |x| 
-          return required_parameters[x] if params_keys.include? x 
+    def get_required_parameters required, params_keys
+      if required.is_a? Hash
+        required.keys.each do |x| 
+          return required[x] if params_keys.include? x 
         end
       end
-      required_parameters
+      required
     end
 
-    def missing_post_parameters? post_parameters, supplied_parameters
-      if post_parameters
-        required_post_parameters = post_parameters.select { |x| x.is_a? String } 
-      end
+    def missing_post_parameters? required, supplied_parameters
+      required_post_parameters = required.select { |x| x.is_a? String } if required
       (required_post_parameters) &&
         (required_post_parameters & supplied_parameters != required_post_parameters)
     end
 
-    def missing_exclusive_post_parameters? post_parameters, supplied_parameters
-      if post_parameters
-        required_exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } 
-        required_exclusive_post_parameters.flatten!
+    def missing_exclusive_post_parameters? required, supplied_parameters
+      if required
+        required_exclusive = required.select { |x| x.is_a? Array } 
+        required_exclusive.flatten!
       end
-      supplied_exclusive_post_parameters = required_exclusive_post_parameters & supplied_parameters
-      (required_exclusive_post_parameters) && (required_exclusive_post_parameters.length != 0) &&
-        (supplied_exclusive_post_parameters.length == 0)
+      supplied_exclusive = required_exclusive & supplied_parameters
+      (required_exclusive) && (required_exclusive.length != 0) &&
+        (supplied_exclusive.length == 0)
     end
 
-    def breaking_exclusive_post_parameter_rule? post_parameters, params_keys
-      exclusive_post_parameters = get_exclusive_post_parameters post_parameters
-      supplied_post_parameters = params_keys
+    def breaking_exclusive_post_parameter_rule? required, params_keys
+      exclusive_post_parameters = get_exclusive_post_parameters(required)
       count = 0
-      if exclusive_post_parameters && supplied_post_parameters
-        supplied_post_parameters.each do |parameter|
-          count += 1 if exclusive_post_parameters.include? parameter
+      if exclusive_post_parameters && params_keys
+        params_keys.each do |x|
+          count += 1 if exclusive_post_parameters.include? x
         end
       end
 
       count > 1
     end
 
-    def missing_optional_required_parameters? optional_required_parameters, params_keys
-      if optional_required_parameters
-        optional_required_parameters.each do |k,v|
-          if (params_keys.include? k) && (params_keys & v != v)
-            return true
-          end
-        end
-      end
+    def missing_required_optional_parameters? required, params_keys
+      required.each { |k,v| return true if (params_keys.include? k) && (params_keys &v != v) } if required
       false
     end
 
-    def missing_one_required_optional_parameter? one_required_optional_parameters, params_keys
-      error = false
-      if one_required_optional_parameters
-        one_required = one_required_optional_parameters & params_keys
-        error = true if one_required.length == 0
-      end
-      error
+    def missing_one_required_optional_parameter? required, params_keys
+      one_required = required & params_keys if required
+       error = true if one_required && one_required.length == 0
+       error ||= false
     end
 
     def get_exclusive_post_parameters post_parameters
       exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } if post_parameters 
       exclusive_post_parameters.flatten if exclusive_post_parameters
     end
-
-    def invalid_resource_path? api_method, resource_path
-      error = false
-      if resource_path && api_method == 'api-get-time-series'
-        error = true if !@@resource_paths.include? resource_path
-      end
-      error
-    end
-    
 
     def required_parameters_error required, api_method, supplied
       if required.is_a? Hash
@@ -158,22 +140,21 @@ module Fitbit
       "#{api_method} requires one of these POST parameters: #{required_exclusive}."
     end
 
-    def exclusive_post_parameters_error post_parameters, api_method, supplied
-      exclusive = get_exclusive_post_parameters(post_parameters)
+    def multiple_exclusive_post_parameters_error required, api_method, supplied
+      exclusive = get_exclusive_post_parameters(required)
       all_supplied = exclusive & supplied
       all_supplied_string = all_supplied.map { |data| "'#{data}'" }.join(' AND ')
       "#{api_method} allows only one of these POST parameters #{exclusive}. You used #{all_supplied_string}."
     end
 
-    def optional_required_parameters_error optional_required_parameters, api_method, supplied
-      required_if = optional_required_parameters.values.flatten
-      "#{api_method} requires #{required_if} when you use #{optional_required_parameters.keys}."
+    def required_optional_parameters_error required, api_method, supplied
+      required_if = required.values.flatten
+      "#{api_method} requires #{required_if} when you use #{required.keys}."
     end
 
-    def auth_error params, api_method, auth_required
+    def auth_error api_method, auth_required, auth_supplied
       if auth_required.is_a? String
-        fitbit_auth = auth_required
-        "#{api_method} requires user auth_token and auth_secret, unless you include [\"#{fitbit_auth}\"]." unless params[fitbit_auth]
+        "#{api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]." unless auth_supplied
       else
         "#{api_method} requires user auth_token and auth_secret."
       end
@@ -185,31 +166,30 @@ module Fitbit
     end
 
     def send_api_request params, api_method, access_token
-      request_url = build_url(params, api_method)
-      request_http_method = @@fitbit_methods[api_method]['http_method']
-      request_headers = get_request_headers(params, api_method)
+      fitbit = @@fitbit_methods[api_method]
+      request_url = build_url(params, fitbit)
+      request_http_method = fitbit['http_method']
+      request_headers = get_request_headers(params, fitbit)
       access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
     end
 
-    def build_url params, api_method
+    def build_url params, fitbit
       api_version = @@api_version
-      api_url_resources = get_url_resources(params, api_method)
+      api_url_resources = get_url_resources(params, fitbit['required_parameters'], fitbit['resources'], fitbit['auth_required'])
       api_format = get_response_format(params['response-format'])
       api_query = uri_encode_query(params['query']) 
       request_url = "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}"
     end
     
-    def get_request_headers params, api_method
-      available_headers = @@fitbit_methods[api_method]['request_headers'] & params.keys
+    def get_request_headers params, fitbit_api_method
+      available_headers = fitbit_api_method['request_headers'] & params.keys
       Hash[params.each { |k,v| [k,v] if available_headers.include? k }] if available_headers
     end
 
-    def get_url_resources params, api_method
-      fitbit_api_method = @@fitbit_methods[api_method]
-      required_parameters = fitbit_api_method['required_parameters']
-      api_ids = get_required_parameters(required_parameters, params.keys) 
-      resources = fitbit_api_method['resources']
-      api_resources = get_required_parameters(resources, params.keys)
+    def get_url_resources params, required_parameters, resources, auth_required
+      params_keys = params.keys
+      api_ids = get_required_parameters(required_parameters, params_keys) 
+      api_resources = get_required_parameters(resources, params_keys)
 
       api_resources.each do |x|
         i = api_resources.index(x)
@@ -218,11 +198,11 @@ module Fitbit
           api_resources[i] = params[id]
           api_ids.delete(x)
         end
-        if x == '-' && fitbit_api_method['auth_required'] == 'user-id'
+        if x == '-' && auth_required == 'user-id'
           api_resources[i] = params['user-id'] if params['user-id']
         end
       end
-      api_method_url = api_resources.join("/")
+      api_resources.join("/")
     end
 
     def get_response_format api_format
