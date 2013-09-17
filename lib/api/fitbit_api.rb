@@ -168,7 +168,9 @@ module Fitbit
       request_url = build_url(params, fitbit)
       request_http_method = fitbit['http_method']
       request_headers = get_request_headers(params, fitbit['request-headers'])
-      access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
+      request_body = get_request_body(params, fitbit['post_parameters']) if request_http_method == 'post'
+      request_body ||= ""
+      access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", request_body,  request_headers )
     end
 
     def build_url params, fitbit
@@ -182,6 +184,10 @@ module Fitbit
     def get_request_headers params, request_headers
       available_headers = request_headers & params.keys
       Hash[params.each { |k,v| [k,v] if available_headers.include? k }] if available_headers
+    end
+    
+    def get_request_body params, post_parameters
+      params.select{ |k,v| [k,v] if post_parameters.include? k } if post_parameters
     end
 
     def get_url_resources params, required_parameters, resources, auth_required
