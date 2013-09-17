@@ -2089,7 +2089,11 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Update-User-Info OAuth request' do
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+      http_method = :post
+      stub_request(:get, "api.fitbit.com#{@api_url}").with(:body => {'gender' => 'MALE'})
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call).to eq(Net::HTTPOK)
+#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should return a helpful error if none of the _one_required_optional_ POST Parameters are used' do
