@@ -32,8 +32,8 @@ module Fitbit
     end
 
     def get_error_message params_keys, api_method, required, no_auth_tokens
-      if missing_required_parameters? required['required_parameters'], params_keys
-        required_parameters_error(required['required_parameters'], api_method, params_keys)
+      if missing_url_parameters? required['url_parameters'], params_keys
+        url_parameters_error(required['url_parameters'], api_method, params_keys)
       elsif missing_post_parameters? required['post_parameters'], params_keys
         post_parameters_error(required['post_parameters'], api_method, params_keys)
       elsif missing_exclusive_post_parameters? required['post_parameters'], params_keys
@@ -54,13 +54,13 @@ module Fitbit
       params
     end
 
-    def missing_required_parameters? required, params_keys
-      required_parameters = get_required_parameters(required, params_keys)
-      (required) && ((required_parameters.is_a? Hash) || 
-                      (params_keys & required_parameters != required_parameters))
+    def missing_url_parameters? required, params_keys
+      url_parameters = get_url_parameters(required, params_keys)
+      (required) && ((url_parameters.is_a? Hash) || 
+                      (params_keys & url_parameters != url_parameters))
     end
 
-    def get_required_parameters required, params_keys
+    def get_url_parameters required, params_keys
       if required.is_a? Hash
         required.keys.each do |x| 
           return required[x] if params_keys.include? x 
@@ -114,7 +114,7 @@ module Fitbit
       exclusive_post_parameters.flatten if exclusive_post_parameters
     end
 
-    def required_parameters_error required, api_method, supplied
+    def url_parameters_error required, api_method, supplied
       if required.is_a? Hash
         count = 1
         error = "#{api_method} requires 1 of #{required.length} options: "
@@ -168,26 +168,26 @@ module Fitbit
       request_url = build_url(params, fitbit)
       request_http_method = fitbit['http_method']
       request_headers = get_request_headers(params, fitbit['request_headers'])
-      fitbit_post_parameters = get_fitbit_post_parameters(fitbit['post_parameters'], fitbit['one_required_optional'], fitbit['required_if'])
-      request_body = get_request_body(params, fitbit_post_parameters) if request_http_method == 'post'
-      request_body ||= ""
-      access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", request_body,  request_headers )
+      access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
     end
 
     def build_url params, fitbit
       api_version = @@api_version
-      api_url_resources = get_url_resources(params, fitbit['required_parameters'], fitbit['resources'], fitbit['auth_required'])
+      api_url_resources = get_url_resources(params, fitbit['url_parameters'], fitbit['resources'], fitbit['auth_required'])
       api_format = get_response_format(params['response-format'])
-      api_query = uri_encode_query(params['query']) 
-      "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}"
+      fitbit_post_parameters = get_fitbit_post_parameters(fitbit['post_parameters'], fitbit['one_required_optional'], fitbit['required_if'])
+      api_query = uri_encode_query(params['query'])
+      api_post_parameters = uri_encode_post_parameters(params, fitbit_post_parameters)
+      "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}#{api_post_parameters}"
     end
 
     def get_fitbit_post_parameters post_parameters, one_required_optional, required_if
       post_parameters ||= []
+      all_post_parameters = post_parameters.flatten
       one_required_optional ||= []
       required_if_values = required_if.values if required_if
       required_if_values ||= []
-      post_parameters |= one_required_optional |= required_if_values
+      all_post_parameters |= (one_required_optional |= required_if_values)
     end
     
     def get_request_headers params, request_headers
@@ -202,10 +202,10 @@ module Fitbit
       body
     end
 
-    def get_url_resources params, required_parameters, resources, auth_required
+    def get_url_resources params, url_parameters, resources, auth_required
       params_keys = params.keys
-      api_ids = get_required_parameters(required_parameters, params_keys) 
-      api_resources = get_required_parameters(resources, params_keys)
+      api_ids = get_url_parameters(url_parameters, params_keys) 
+      api_resources = get_url_parameters(resources, params_keys)
       add_ids(params, api_resources, api_ids, auth_required)
     end
 
@@ -235,6 +235,21 @@ module Fitbit
         "?#{api_query}"
       end
     end
+
+    def uri_encode_post_parameters params, fitbit_post_parameters
+      request_body = get_request_body(params, fitbit_post_parameters) 
+      if request_body.nil?
+        ""
+      else
+        post_parameters = ""
+        request_body.each_with_index do |(k,v),i|
+          post_parameters << "&" if i > 0
+          post_parameters << "#{k}=#{v}"
+        end
+        "?#{post_parameters}" if post_parameters != ""
+      end
+    end
+
 
     @@api_version = 1
 
@@ -279,19 +294,19 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'post',
         'post_parameters'     => ['accept'],
-        'required_parameters' => ['from-user-id'],
+        'url_parameters' => ['from-user-id'],
         'resources'           => ['user', '-', 'friends', 'invitations', '<from-user-id>'],
       },
       'api-add-favorite-activity' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'required_parameters' => ['activity-id'],
+        'url_parameters' => ['activity-id'],
         'resources'           => ['user', '-', 'activities', 'favorite', '<activity-id>'],
       },
       'api-add-favorite-food' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'required_parameters' => ['food-id'],
+        'url_parameters' => ['food-id'],
         'resources'           => ['user', '-', 'foods', 'log', 'favorite', '<food-id>'],
       },
       'api-browse-activites' => {
@@ -323,61 +338,61 @@ module Fitbit
       'api-delete-activity-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['activity-log-id'],
+        'url_parameters' => ['activity-log-id'],
         'resources'           => ['user', '-', 'activities', '<activity-log-id>'],
       },
       'api-delete-blood-pressure-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['bp-log-id'],
+        'url_parameters' => ['bp-log-id'],
         'resources'           => ['user', '-', 'bp', '<bp-log-id>'],
       },
       'api-delete-body-fat-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['body-fat-log-id'],
+        'url_parameters' => ['body-fat-log-id'],
         'resources'           => ['user', '-', 'body', 'log', 'fat', '<body-fat-log-id>'],
       },
       'api-delete-body-weight-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['body-weight-log-id'],
+        'url_parameters' => ['body-weight-log-id'],
         'resources'           => ['user', '-', 'body', 'log', 'weight', '<body-weight-log-id>'],
       },
       'api-delete-favorite-activity' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['activity-id'],
+        'url_parameters' => ['activity-id'],
         'resources'           => ['user', '-', 'activities', 'favorite', '<activity-id>'],
       },
       'api-delete-favorite-food' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['food-id'],
+        'url_parameters' => ['food-id'],
         'resources'           => ['user', '-', 'foods', 'log', 'favorite', '<food-id>'],
       },
       'api-delete-food-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['food-log-id'],
+        'url_parameters' => ['food-log-id'],
         'resources'           => ['user', '-', 'foods', 'log', '<food-log-id>'],
       },
       'api-delete-heart-rate-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['heart-log-id'],
+        'url_parameters' => ['heart-log-id'],
         'resources'           => ['user', '-', 'heart', '<heart-log-id>'],
       },
       'api-delete-sleep-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['sleep-log-id'],
+        'url_parameters' => ['sleep-log-id'],
         'resources'           => ['user', '-', 'sleep', '<sleep-log-id>'],
       },
       'api-delete-water-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['water-log-id'],
+        'url_parameters' => ['water-log-id'],
         'resources'           => ['user', '-', 'foods', 'log', 'water', '<water-log-id>'],
       },
       'api-devices-add-alarm' => {
@@ -385,19 +400,19 @@ module Fitbit
         'http_method'         => 'post',
         'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays'],
         'request_headers'     => ['Accept-Language'],
-        'required_parameters' => ['device-id'],
+        'url_parameters' => ['device-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms'],
       },
       'api-devices-delete-alarm' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
-        'required_parameters' => ['device-id', 'alarm-id'],
+        'url_parameters' => ['device-id', 'alarm-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms', '<alarm-id>'],
       },
       'api-devices-get-alarms' => {
         'auth_required'       => true,
         'http_method'         => 'get',
-        'required_parameters' => ['device-id'],
+        'url_parameters' => ['device-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms'],
       },
       'api-devices-update-alarm' => {
@@ -405,21 +420,21 @@ module Fitbit
         'http_method'         => 'post',
         'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays', 'snoozeLength', 'snoozeCount'],
         'request_headers'     => ['Accept-Language'],
-        'required_parameters' => ['device-id', 'alarm-id'],
+        'url_parameters' => ['device-id', 'alarm-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms', '<alarm-id>'],
       },
       'api-get-activities' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Locale', 'Accept-Language'],
-        'required_parameters' => ['date'],
+        'url_parameters' => ['date'],
         'resources'           => ['user', '-', 'activities', 'date', '<date>'],
       },
       'api-get-activity' => {
         'auth_required'       => false,
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Locale'],
-        'required_parameters' => ['activity-id'],
+        'url_parameters' => ['activity-id'],
         'resources'           => ['activities', '<activity-id>'],
       },
       'api-get-activity-daily-goals' => {
@@ -449,13 +464,13 @@ module Fitbit
       'api-get-blood-pressure' => {
         'auth_required'       => true,
         'http_method'         => 'get',
-        'required_parameters' => ['date'],
+        'url_parameters' => ['date'],
         'resources'           => ['user', '-', 'bp', 'date', '<date>'],
       },
       'api-get-body-fat' => {
         'auth_required'       => true,
         'http_method'         => 'get',
-        'required_parameters' => {
+        'url_parameters' => {
           'date'      => ['date'],
           'end-date'  => ['base-date', 'end-date'],
           'period'    => ['base-date', 'period'],
@@ -476,14 +491,14 @@ module Fitbit
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Language'],
-        'required_parameters' => ['date'],
+        'url_parameters' => ['date'],
         'resources'           => ['user', '-', 'body', 'date', '<date>'],
       },
       'api-get-body-weight' => {
         'auth_required'       => true,
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Language'],
-        'required_parameters' => {
+        'url_parameters' => {
           'date'      => ['date'],
           'end-date'  => ['base-date', 'end-date'],
           'period'    => ['base-date', 'period'],
@@ -503,7 +518,7 @@ module Fitbit
       'api-get-device' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
-        'required_parameters' => ['device-id'],
+        'url_parameters' => ['device-id'],
         'resources'           => ['user', '-', 'devices', '<device-id>'],
       },
       'api-get-devices' => {
@@ -526,7 +541,7 @@ module Fitbit
         'auth_required'       => false,
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Locale'],
-        'required_parameters' => ['food-id'],
+        'url_parameters' => ['food-id'],
         'resources'           => ['foods', '<food-id>'],
       },
       'api-get-food-goals' => {
@@ -538,7 +553,7 @@ module Fitbit
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Locale'],
-        'required_parameters' => ['date'],
+        'url_parameters' => ['date'],
         'resources'           => ['user', '-', 'foods', 'log', 'date', '<date>'],
       },
       'api-get-food-units' => {
@@ -575,13 +590,13 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Language'],
-        'required_parameters' => ['date'],
+        'url_parameters' => ['date'],
         'resources'           => ['user', '-', 'glucose', 'date', '<date>'],
       },
       'api-get-heart-rate' => {
         'auth_required'       => true,
         'http_method'         => 'get',
-        'required_parameters' => ['date'],
+        'url_parameters' => ['date'],
         'resources'           => ['user', '-', 'heart', 'date', '<date>'],
       },
       'api-get-invites' => {
@@ -604,14 +619,14 @@ module Fitbit
       'api-get-sleep' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
-        'required_parameters' => ['date'],
+        'url_parameters' => ['date'],
         'resources'           => ['user', '-', 'sleep', 'date', '<date>'],
       },
       'api-get-time-series' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Language'],
-        'required_parameters' => {
+        'url_parameters' => {
           'end-date'  => ['base-date', 'end-date', 'resource-path'],
           'period'    => ['base-date', 'period', 'resource-path'],
         },
@@ -630,7 +645,7 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Language'],
-        'required_parameters' => ['date'],
+        'url_parameters' => ['date'],
         'resources'           => ['user', '-', 'foods', 'log', 'water', 'date', '<date>'],
       },
       'api-log-activity' => {
@@ -706,7 +721,7 @@ module Fitbit
         'auth_required'       => false,
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Locale'],
-        'required_parameters' => ['query'],
+        'url_parameters' => ['query'],
         'resources'           => ['foods', 'search'],
       },
       'api-update-activity-daily-goals' => {
