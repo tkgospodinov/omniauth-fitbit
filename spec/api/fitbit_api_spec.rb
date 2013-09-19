@@ -194,8 +194,26 @@ describe Fitbit::Api do
     end
   end
 
-  context 'Missing required auth tokens' do
+  context 'Missing required URL parameters' do
     before(:each) do
+      @api_method = 'api-delete-activity-log'
+      @api_url = "/1/user/-/activities/#{@activity_log_id}.#{@response_format}"
+      @params = {
+        'api-method'      => 'API-Delete-Activity-Log',
+        'activity-log-id' => @activity_log_id, 
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'Raises Error: <api-method> requires <required>. You\'re missing <required-supplied>.' do
+      @params.delete('activity-log-id')
+      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'Missing required auth tokens or user-id' do
+    it 'Raises Error: <api-method> requires user auth_token and auth_secret' do
       @api_method = 'api-accept-invite'
       @api_url = "/1/user/-/friends/invitations/#{@user_id}.#{@response_format}"
       @params = {
@@ -204,10 +222,19 @@ describe Fitbit::Api do
         'from-user-id'        => @user_id,
         'response-format'     => @response_format,
       }
+      error_message = "#{@api_method} requires user auth_token and auth_secret."
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
-    it 'Raises Error: <api-method> requires user auth_token and auth_secret' do
-      error_message = "#{@api_method} requires user auth_token and auth_secret."
+    it "Raises Error: <api-method> requires user auth_token and auth_secret, unless you include [\"user-id\"]." do
+      @api_method = 'api-get-badges' 
+      @api_url = "/1/user/-/badges.#{@response_format}"
+      @params = {
+        'api-method'      => 'API-Get-Badges',
+        'Accept-Locale'   => 'en_US',
+        'response-format'     => @response_format,
+      }
+      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
@@ -229,20 +256,43 @@ describe Fitbit::Api do
     end
   end
 
-  context 'Missing required URL parameters' do
+  context 'Missing required optional POST parameters (where using one parameter requires using another related parameter)' do
     before(:each) do
-      @api_method = 'api-delete-activity-log'
-      @api_url = "/1/user/-/activities/#{@activity_log_id}.#{@response_format}"
+      @api_method = 'api-log-activity'
+      @api_url = "/1/user/-/activities.#{@response_format}"
       @params = {
-        'api-method'      => 'API-Delete-Activity-Log',
-        'activity-log-id' => @activity_log_id, 
+        'api-method'          => 'API-Log-Activity',
+        'activityId'          => @activity_id,
+        'startTime'           => @time,
+        'durationMillis'      => '10000',
+        'date'                => @date,
         'response-format'     => @response_format,
       }
     end
 
-    it 'Raises Error: <api-method> requires <required>. You\'re missing <required-supplied>.' do
-      @params.delete('activity-log-id')
-      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
+    it 'Raises Error: <api-method> requires <missing_parameter> when you use <current_parameter>.' do
+      @params.delete('activityId')
+      @params['activityName'] = @activity_name
+      error_message = helpful_errors(@api_method, 'required_if', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
+  context 'Missing one_required POST parameter (where at least one of these parameters must be used)' do
+    before(:each) do
+      @api_method = 'api-log-body-measurements'
+      @api_url = "/1/user/-/body.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Log-Body-Measurements',
+        'bicep'               => '1.00',
+        'date'                => @date,
+        'response-format'     => @response_format,
+      }
+    end
+
+    it 'Raises Error: <api-method> requires at least one of the following POST parameters <one_required>.' do
+      @params.delete('bicep')
+      error_message = helpful_errors(@api_method, 'one_required', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
@@ -261,15 +311,6 @@ describe Fitbit::Api do
       }
     end
 
-    it 'should create API-Log-Activity OAuth request with activityName instead of activityId' do
-      @params.delete('activityId')
-      @params['activityName'] = @activity_name
-      @params['manualCalories'] = '1000'
-      ignore = ['api-method', 'response-format']
-      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
     context 'When more than one exclusive parameter is included' do
       it 'Raises Error: <api-method> allows only one of these POST parameters: <exclusive>. You used <supplied>.' do
         @params['activityName'] = @activity_name
@@ -279,108 +320,113 @@ describe Fitbit::Api do
       end
     end
 
-    context 'When at least one exclusive parameter is required, but none are included' do
-      it 'Raises Error: <api-method> requires one of these POST parameters: <required_exclusive>.' do
+    context 'When none of the exclusive parameters are included' do
+      it 'Raises Error: <api-method> requires one of these POST parameters: <exclusive>.' do
         @params.delete('activityId')
         error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
         lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
       end
     end
-
-    context 'When the currently selected optional parameter requires another optional parameter which is missing' do
-      it 'Raises Error: <api-method> requires <missing_parameter> when you use <current_parameter>.' do
-        @params.delete('activityId')
-        @params['activityName'] = @activity_name
-        error_message = helpful_errors(@api_method, 'required_if', @params.keys)
-        lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-      end
-    end
   end
-
-  context 'POST request with dynamic id in url, auth tokens required' do
-    before(:each) do
-      @api_method = 'api-accept-invite'
-      @api_url = "/1/user/-/friends/invitations/#{@user_id}.#{@response_format}"
-      @params = {
-        'api-method'          => 'API-Accept-Invite',
-        'accept'              => 'true',
-        'from-user-id'        => @user_id,
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create OAuth request' do
-      ignore = ['api-method', 'response-format', 'from-user-id']
-      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-  end
-#
-#  context 'API-Add-Favorite-Activity method' do
-#    before(:each) do
-#      @api_method = 'api-add-favorite-activity' 
-#      @api_url = "/1/user/-/activities/favorite/#{@activity_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Add-Favorite-Activity',
-#        'activity-id'     => @activity_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Add-Favorite-Activity OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Add-Favorite-Food method' do
-#    before(:each) do
-#      @api_method = 'api-add-favorite-food'
-#      @api_url = "/1/user/-/foods/log/favorite/#{@food_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Add-Favorite-Food',
-#        'food-id'         => @food_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Add-Favorite-Food OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
   
-  context 'GET request with Request Headers' do
+  context 'Create authenticated GET request' do
     before(:each) do
-      @api_method = 'api-browse-activites'
+      @api_method = 'api-browse-activities'
       @api_url = "/1/activities.#{@response_format}"
       @params = { 
-        'api-method'        => 'API-Browse-Activites',
-        'Accept-Locale' => 'en_US', 
-        'response-format'     => @response_format,
+        'api-method'        => 'API-Browse-Activities',
+        'Accept-Locale'     => 'en_US', 
+        'response-format'   => @response_format,
       }
     end
 
-    it 'should create API-Browse-Activites OAuth request' do
+    it 'GET request' do
+      @params.delete('Accept-Locale')
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'GET request with request headers' do
+      headers = { 'Accept-Locale' => 'en_US' }
+      stub_request(:get, "api.fitbit.com#{@api_url}") do |req|
+        headers.each_pair do |k,v|
+          req.headers[k] = v
+        end
+      end 
+      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
+      expect(api_call.class).to eq(Net::HTTPOK)
+    end
+
+    it 'GET request with dynamic url parameter' do
+      @api_method = 'api-devices-get-alarms' 
+      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms.#{@response_format}"
+      @params = {
+        'api-method'    => 'API-Devices-Get-Alarms',
+        'device-id'     => @device_id,
+        'response-format'     => @response_format,
+      }
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+
+    it 'GET request with user-id authentication instead of auth tokens' do
+      @api_method = 'api-get-activity-stats' 
+      @api_url = "/1/user/#{@user_id}/activities.#{@response_format}"
+      @params = {
+        'api-method'      => 'API-Get-Activity-Stats',
+        'Accept-Language' => 'en_US',
+        'response-format'     => @response_format,
+      }
+      @params['user-id'] = @user_id
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+    end
+
+    context 'GET request with multiple possible urls based on date or time period' do
+      before(:each) do
+        @params = {}
+        @api_method = 'api-get-body-fat'
+        @api_url = "/1/user/-/body/log/fat/date/#{@date}.#{@response_format}"
+        @params = {
+          'api-method'      => 'API-Get-Body-Fat',
+          'date'            => @date,
+          'response-format'     => @response_format,
+        }
+      end
+
+      it 'Request based on <date>' do
+        oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+      end
+
+      it 'Request based on <base-date>/<end-date>' do
+        @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
+        @params.delete('date')
+        @params['base-date'] = @date_range[0]
+        @params['end-date'] = @date_range[1]
+        oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+      end
+
+      it 'Request based on <base-date>/<period>' do
+        @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@period}.#{@response_format}"
+        @params.delete('date')
+        @params['base-date'] = @date_range[0]
+        @params['period'] = @period
+        oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+      end
+    end
+
+    it 'GET request with search query' do
+      @api_method = 'api-search-foods'
+      @api_url = "/1/foods/search.#{@response_format}?query=banana%20cream%20pie"
+      @params = { 
+        'api-method'      => 'API-Search-Foods',
+        'query'           => 'banana cream pie',
+        'response-format'     => @response_format,
+      }
+
+      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
 
-  context 'POST request with Request Headers' do
-    before(:each) do
+  context 'Create authenticated POST request' do
+    it 'POST request with request headers' do
       @api_method = 'api-config-friends-leaderboard'
       @api_url = "/1/user/-/friends/leaderboard.#{@response_format}"
       @params = {
@@ -389,10 +435,6 @@ describe Fitbit::Api do
         'Accept-Language'       => 'en_US',
         'response-format'     => @response_format,
       }
-      
-    end
-
-    it 'should create API-Config-Friends-Leaderboard OAuth request w/ _request headers_' do
       ignore = ['api-method', 'response-format', 'Accept-Language']
       @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
 
@@ -405,395 +447,22 @@ describe Fitbit::Api do
       api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
       expect(api_call.class).to eq(Net::HTTPOK)
     end
-  end
-  
-#  context 'API-Create-Food method' do
-#    before(:each) do
-#      @api_method = 'api-create-food'
-#      @api_url = "/1/foods.#{@response_format}"
-#      @params = {
-#        'api-method'                    => 'API-Create-Food',
-#        'name'                          => 'food name',
-#        'defaultFoodMeasurementUnitId'  => '1',
-#        'defaultServingSize'            => '1',
-#        'calories'                      => '1000',
-#        'formType'                      => 'LIQUID',
-#        'description'                   => 'Say something here about the new food',
-#        'Accept-Locale'                 => 'en_US', 
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Create-Food OAuth request' do
-#      stub_request(:post, "api.fitbit.com#{@api_url}") do |req|
-#        headers.each_pair do |k,v|
-#          req.headers[k] = v
-#        end
-#      end 
-#      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-#      expect(api_call.class).to eq(Net::HTTPOK)
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-  
-#  context 'API-Create-Invite method' do
-#    before(:each) do
-#      @api_method = 'api-create-invite'
-#      @api_url = "/1/user/-/friends/invitations.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Create-Invite',
-#        'invitedUserEmail'    => 'email@email.com',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Create-Invite OAuth request' do
-#      stub_request(:post, "api.fitbit.com#{@api_url}") do |req|
-#        headers.each_pair do |k,v|
-#          req.headers[k] = v
-#        end
-#      end 
-#      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-#      expect(api_call.class).to eq(Net::HTTPOK)
-#    end
-#
-#    it 'should return a helpful error if both _invitedUserEmail_ and _invitedUserId_ exclusive POST Parameters are used' do
-#      @params['invitedUserId'] = @user_id
-#      error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if neither _invitedUserEmail_ nor _invitedUserId_ exclusive POST Parameters are used' do
-#      @params.delete('invitedUserEmail')
-#      error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
 
-  context 'DELETE request with dynamic id in url, auth tokens required' do
-    before(:each) do
-      @api_method = 'api-delete-activity-log'
-      @api_url = "/1/user/-/activities/#{@activity_log_id}.#{@response_format}"
+    it 'POST request with dynamic url parameter and one required POST parameter' do
+      @api_method = 'api-accept-invite'
+      @api_url = "/1/user/-/friends/invitations/#{@user_id}.#{@response_format}"
       @params = {
-        'api-method'      => 'API-Delete-Activity-Log',
-        'activity-log-id' => @activity_log_id, 
+        'api-method'          => 'API-Accept-Invite',
+        'accept'              => 'true',
+        'from-user-id'        => @user_id,
         'response-format'     => @response_format,
       }
+      ignore = ['api-method', 'response-format', 'from-user-id']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
-    it 'should create API-Delete-Activity-Log OAuth request' do
-      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-  end
-
-#  context 'API-Delete-Blood-Pressure-Log method' do
-#    before(:each) do
-#      @api_method = 'api-delete-blood-pressure-log'
-#      @api_url = "/1/user/-/bp/#{@bp_log_id}.#{@response_format}"
-#      @params = {
-#        'api-method'    => 'API-Delete-Blood-Pressure-Log',
-#        'bp-log-id'     => @bp_log_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Blood-Pressure-Log OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Delete-Body-Fat-Log method' do
-#    before(:each) do
-#      @api_method = 'api-delete-body-fat-log'
-#      @api_url = "/1/user/-/body/log/fat/#{@body_fat_log_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Delete-Body-Fat-Log',
-#        'body-fat-log-id' => @body_fat_log_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Body-Fat-Log OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Delete-Body-Weight-Log method' do
-#    before(:each) do
-#      @api_method = 'api-delete-body-weight-log'
-#      @api_url = "/1/user/-/body/log/weight/#{@body_weight_log_id}.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Delete-Body-Weight-Log',
-#        'body-weight-log-id'  => @body_weight_log_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Body-Weight-Log OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Delete-Favorite-Activity method' do
-#    before(:each) do
-#      @api_method = 'api-delete-favorite-activity' 
-#      @api_url = "/1/user/-/activities/favorite/#{@activity_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Delete-Favorite-Activity',
-#        'activity-id'     => @activity_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Favorite-Activity OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Delete-Favorite-Food method' do
-#    before(:each) do
-#      @api_method = 'api-delete-favorite-food'
-#      @api_url = "/1/user/-/foods/log/favorite/#{@food_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Delete-Favorite-Food',
-#        'food-id'         => @food_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Favorite-Food OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Delete-Food-Log method' do
-#    before(:each) do
-#      @api_method = 'api-delete-food-log'
-#      @api_url = "/1/user/-/foods/log/#{@food_log_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Delete-Food-Log',
-#        'food-log-id'     => @food_log_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Food-Log OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Delete-Heart-Rate-Log method' do
-#    before(:each) do
-#      @api_method = 'api-delete-heart-rate-log'
-#      @api_url = "/1/user/-/heart/#{@heart_log_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Delete-Heart-Rate-Log',
-#        'heart-log-id'    => @heart_log_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Heart-Rate-Log OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Delete-Sleep-Log method' do
-#    before(:each) do
-#      @api_method = 'api-delete-sleep-log'
-#      @api_url = "/1/user/-/sleep/#{@sleep_log_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Delete-Sleep-Log',
-#        'sleep-log-id'    => @sleep_log_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Sleep-Log OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Delete-Water-Log method' do
-#    before(:each) do
-#      @api_method = 'api-delete-water-log'
-#      @api_url = "/1/user/-/foods/log/water/#{@water_log_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Delete-Water-Log',
-#        'water-log-id'    => @water_log_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Delete-Water-Log OAuth request' do
-#      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Devices-Add-Alarm method' do
-#    before(:each) do
-#      @api_method = 'api-devices-add-alarm' 
-#      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Devices-Add-Alarm',
-#        'device-id'       => @device_id,
-#        'time'            => '10:00',
-#        'enabled'         => 'true',
-#        'recurring'       => 'true',
-#        'weekDays'        => '(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)',
-#        'label'           => 'test alarm',
-#        'snoozeLength'    => '10',
-#        'snoozeCount'     => '2',
-#        'vibe'            => 'DEFAULT',
-#        'Accept-Language' => 'en_US', 
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Devices-Add-Alarm OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-  context 'DELETE with multiple dynamic ids in url' do
-    before(:each) do
-      @api_method = 'api-devices-delete-alarm' 
-      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms/#{@alarm_id}.#{@response_format}"
-      @params = {
-        'api-method'          => 'API-Devices-Delete-Alarm',
-        'device-id'           => @device_id,
-        'alarm-id'            => @alarm_id,
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Devices-Delete-Alarm OAuth request' do
-      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-  end
-
-#  context 'API-Devices-Get-Alarms method' do
-#    before(:each) do
-#      @api_method = 'api-devices-get-alarms' 
-#      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms.#{@response_format}"
-#      @params = {
-#        'api-method'    => 'API-Devices-Get-Alarms',
-#        'device-id'     => @device_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Devices-Get-Alarms OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-  context 'POST request with multiple optional POST parameters' do
-    before(:each) do
+    it 'POST request with dynamic url parameters and multiple optional POST parameters' do
       @api_method = 'api-devices-update-alarm' 
       @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms/#{@alarm_id}.#{@response_format}"
       @params = {
@@ -811,742 +480,36 @@ describe Fitbit::Api do
         'Accept-Language' => 'en_US', 
         'response-format'     => @response_format,
       }
-    end
-
-    it 'should create API-Devices-Update-Alarm OAuth request' do
       ignore = ['api-method', 'response-format', 'Accept-Language', 'device-id', 'alarm-id']
       @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
   end
 
-  context 'GET request ith multiple request headers' do
-    before(:each) do
-      @api_method = 'api-get-activities' 
-      @api_url = "/1/user/-/activities/date/#{@date}.#{@response_format}"
+  context 'Create authenticated DELETE request' do
+    it 'DELETE request with dynamic url parameter' do
+      @api_method = 'api-delete-activity-log'
+      @api_url = "/1/user/-/activities/#{@activity_log_id}.#{@response_format}"
       @params = {
-        'api-method'        => 'API-Get-Activities',
-        'date'              => @date,
-        'Accept-Locale'     => 'en_US',
-        'Accept-Language'   => 'en_US',
+        'api-method'      => 'API-Delete-Activity-Log',
+        'activity-log-id' => @activity_log_id, 
         'response-format'     => @response_format,
       }
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
-    it 'should create API-Get-Activities OAuth request' do
-      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-  end
-
-#  context 'API-Get-Activity method' do
-#    before(:each) do
-#      @api_method = 'api-get-activity' 
-#      @api_url = "/1/activities/#{@activity_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Activity',
-#        'activity-id'     => @activity_id,
-#        'Accept-Locale'   => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Activity OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Activity-Daily-Goals method' do
-#    before(:each) do
-#      @api_method = 'api-get-activity-daily-goals' 
-#      @api_url = "/1/user/-/activities/goals/daily.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Activity-Daily-Goals',
-#        'Accept-Language' => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Activity-Daily-Goals OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Activity-Stats method' do
-#    before(:each) do
-#      @api_method = 'api-get-activity-stats' 
-#      @api_url = "/1/user/-/activities.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Activity-Stats',
-#        'Accept-Language' => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Activity-Stats OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Activity-Stats OAuth request with _user-id_ instead of auth tokens' do
-#      @api_url = "/1/user/#{@user_id}/activities.#{@response_format}"
-#      @params['user-id'] = @user_id
-#      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Activity-Weekly-Goals method' do
-#    before(:each) do
-#      @api_method = 'api-get-activity-weekly-goals' 
-#      @api_url = "/1/user/-/activities/goals/weekly.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Activity-Weekly-Goals',
-#        'Accept-Language' => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Activity-Weekly-Goals OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-  context 'GET request requires either user-id or auth tokens' do
-    before(:each) do
-      @api_method = 'api-get-badges' 
-      @api_url = "/1/user/-/badges.#{@response_format}"
+    it 'DELETE request with multiple dynamic url parameters' do
+      @api_method = 'api-devices-delete-alarm' 
+      @api_url = "/1/user/-/devices/tracker/#{@device_id}/alarms/#{@alarm_id}.#{@response_format}"
       @params = {
-        'api-method'      => 'API-Get-Badges',
-        'Accept-Locale'   => 'en_US',
+        'api-method'          => 'API-Devices-Delete-Alarm',
+        'device-id'           => @device_id,
+        'alarm-id'            => @alarm_id,
         'response-format'     => @response_format,
       }
-    end
-
-    it 'should create API-Get-Badges OAuth request' do
-      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should create API-Get-Badges OAuth request with _user-id_ instead of auth tokens' do
-      @api_url = "/1/user/#{@user_id}/badges.#{@response_format}"
-      @params['user-id'] = @user_id
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-    end
-
-    it 'should return a helpful error if auth_tokens are missing' do
-      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
+      oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
   end
-
-#  context 'API-Get-Blood-Pressure method' do
-#    before(:each) do
-#      @api_method = 'api-get-blood-pressure' 
-#      @api_url = "/1/user/-/bp/date/#{@date}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Blood-Pressure',
-#        'date'            => @date,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Blood-Pressure OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-  context 'GET request with date and time period dynamic url' do
-    before(:each) do
-      @params = {}
-      @api_method = 'api-get-body-fat'
-      @api_url = "/1/user/-/body/log/fat/date/#{@date}.#{@response_format}"
-      @params = {
-        'api-method'      => 'API-Get-Body-Fat',
-        'date'            => @date,
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-Body-Fat <date> OAuth request' do
-      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should create API-Get-Body-Fat <base-date>/<end-date> OAuth request' do
-      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
-      @params.delete('date')
-      @params['base-date'] = @date_range[0]
-      @params['end-date'] = @date_range[1]
-      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should create API-Get-Body-Fat <base-date>/<period> OAuth request' do
-      @api_url = "/1/user/-/body/log/fat/date/#{@date_range[0]}/#{@period}.#{@response_format}"
-      @params.delete('date')
-      @params['base-date'] = @date_range[0]
-      @params['period'] = @period
-      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-  end
-
-#  context 'API-Get-Body-Fat-Goal method' do
-#    before(:each) do
-#      @api_method = 'api-get-body-fat-goal' 
-#      @api_url = "/1/user/-/body/log/fat/goal.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Body-Fat-Goal',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Body-Fat-Goal OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Body-Measurements method' do
-#    before(:each) do
-#      @api_method = 'api-get-body-measurements' 
-#      @api_url = "/1/user/-/body/date/#{@date}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Body-Measurements',
-#        'date'            => @date,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Body-Measurements OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Body-Measurements OAuth request with _user-id_ instead of auth tokens' do
-#      @api_url = "/1/user/#{@user_id}/body/date/#{@date}.#{@response_format}"
-#      @params['user-id'] = @user_id
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Body-Weight method' do
-#    before(:each) do
-#      @params = {}
-#      @api_method = 'api-get-body-weight'
-#      @api_url = "/1/user/-/body/log/weight/date/#{@date}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Body-Weight',
-#        'date'            => @date,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Body-Weight <date> OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Body-Weight <base-date>/<end-date> OAuth request' do
-#      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
-#      @params.delete('date')
-#      @params['base-date'] = @date_range[0]
-#      @params['end-date'] = @date_range[1]
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Body-Weight <base-date>/<period> OAuth request' do
-#      @api_url = "/1/user/-/body/log/weight/date/#{@date_range[0]}/#{@period}.#{@response_format}"
-#      @params.delete('date')
-#      @params['base-date'] = @date_range[0]
-#      @params['period'] = @period
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Body-Weight-Goal method' do
-#    before(:each) do
-#      @api_method = 'api-get-body-weight-goal' 
-#      @api_url = "/1/user/-/body/log/weight/goal.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Body-Weight-Goal',
-#        'Accept-Language'       => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Body-Weight-Goal OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Device method' do
-#    before(:each) do
-#      @params = {}
-#      @api_method = 'api-get-device' 
-#      @api_url = "/1/user/-/devices/#{@device_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Device',
-#        'device-id'       => @device_id,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Device OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Device OAuth request with _user-id_ instead auth tokens' do
-#      @api_url = "/1/user/#{@user_id}/devices/#{@device_id}.#{@response_format}"
-#      @params['user-id'] = @user_id
-#      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Devices' do
-#    before(:each) do
-#      @api_method = 'api-get-devices' 
-#      @api_url = "/1/user/-/devices.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Devices',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Devices OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Favorite-Activities method' do
-#    before(:each) do
-#      @api_method = 'api-get-favorite-activities' 
-#      @api_url = "/1/user/-/activities/favorite.#{@response_format}"
-#      @params = {
-#        'api-method'        => 'API-Get-Favorite-Activities',
-#        'Accept-Locale'     => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Favorite-Activities OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Favorite-Activities OAuth request with _user-id_ instead of auth tokens' do
-#      @api_url = "/1/user/#{@user_id}/activities/favorite.#{@response_format}"
-#      @params['user-id'] = @user_id
-#      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-#    end
-#
-#    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Favorite-Foods method' do
-#    before(:each) do
-#      @api_method = 'api-get-favorite-foods'
-#      @api_url = "/1/user/-/foods/log/favorite.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Favorite-Foods',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Favorite-Foods OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Food method' do
-#    before(:each) do
-#      @api_method = 'api-get-food'
-#      @api_url = "/1/foods/#{@food_id}.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Food',
-#        'food-id'         => @food_id,
-#        'Accept-Locale'   => 'en_US', 
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Food OAuth request' do
-#      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Food-Goals method' do
-#    before(:each) do
-#      @api_method = 'api-get-food-goals'
-#      @api_url = "/1/user/-/foods/log/goal.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Food-Goals',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Food-Goals OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Foods method' do
-#    before(:each) do
-#      @api_method = 'api-get-foods' 
-#      @api_url = "/1/user/-/foods/log/date/#{@date}.#{@response_format}"
-#      @params = {
-#        'api-method'        => 'API-Get-Foods',
-#        'Accept-Locale'     => 'en_US',
-#        'date'              => @date,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Foods OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Foods OAuth request with _user-id_ instead of auth tokens' do
-#      @api_url = "/1/user/#{@user_id}/foods/log/date/#{@date}.#{@response_format}"
-#      @params['user-id'] = @user_id
-#      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Food-Units method' do
-#    before(:each) do
-#      @api_method = 'api-get-food-units'
-#      @api_url = "/1/foods/units.#{@response_format}"
-#      @params = {
-#        'api-method'      => 'API-Get-Food-Units',
-#        'Accept-Locale'   => 'en_US', 
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Food-Units OAuth request' do
-#      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-#    end
-#  end
-
-#  context 'API-Get-Frequent-Activities method' do
-#    before(:each) do
-#      @api_method = 'api-get-frequent-activities' 
-#      @api_url = "/1/user/-/activities/frequent.#{@response_format}"
-#      @params = {
-#        'api-method'        => 'API-Get-Frequent-Activities',
-#        'Accept-Language'   => 'en_US',
-#        'Accept-Locale'     => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Frequent-Activities OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Frequent-Foods method' do
-#    before(:each) do
-#      @api_method = 'api-get-frequent-foods' 
-#      @api_url = "/1/user/-/foods/log/frequent.#{@response_format}"
-#      @params = {
-#        'api-method'        => 'API-Get-Frequent-Foods',
-#        'Accept-Locale'     => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Frequent-Foods OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Friends method' do
-#    before(:each) do
-#      @api_method = 'api-get-friends' 
-#      @api_url = "/1/user/-/friends.#{@response_format}"
-#      @params = {
-#        'api-method'        => 'API-Get-Friends',
-#        'Accept-Language'       => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Friends OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Friends OAuth request with _user-id_ instead of auth tokens' do
-#      @api_url = "/1/user/#{@user_id}/friends.#{@response_format}"
-#      @params['user-id'] = @user_id
-#      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-#    end
-#
-#    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Friends-Leaderboard method' do
-#    before(:each) do
-#      @api_method = 'api-get-friends-leaderboard' 
-#      @api_url = "/1/user/-/friends/leaderboard.#{@response_format}"
-#      @params = {
-#        'api-method'        => 'API-Get-Friends-Leaderboard',
-#        'Accept-Language'       => 'en_US',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Friends-Leaderboard OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Glucose method' do
-#    before(:each) do
-#      @api_method = 'api-get-glucose' 
-#      @api_url = "/1/user/-/glucose/date/#{@date}.#{@response_format}"
-#      @params = {
-#        'api-method'            => 'API-Get-Glucose',
-#        'Accept-Language'       => 'en_US',
-#        'date'                  => @date,
-#        'response-format'       => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Glucose OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Heart-Rate method' do
-#    before(:each) do
-#      @api_method = 'api-get-heart-rate' 
-#      @api_url = "/1/user/-/heart/date/#{@date}.#{@response_format}"
-#      @params = {
-#        'api-method'            => 'API-Get-Heart-Rate',
-#        'date'                  => @date,
-#        'response-format'       => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Heart-Rate OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Invites method' do
-#    before(:each) do
-#      @api_method = 'api-get-invites' 
-#      @api_url = "/1/user/-/friends/invitations.#{@response_format}"
-#      @params = {
-#        'api-method'            => 'API-Get-Invites',
-#        'response-format'       => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Invites OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Meals method' do
-#    before(:each) do
-#      @api_method = 'api-get-meals' 
-#      @api_url = "/1/user/-/meals.#{@response_format}"
-#      @params = {
-#        'api-method'            => 'API-Get-Meals',
-#        'response-format'       => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Meals OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Recent-Activities method' do
-#    before(:each) do
-#      @api_method = 'api-get-recent-activities' 
-#      @api_url = "/1/user/-/activities/recent.#{@response_format}"
-#      @params = {
-#        'api-method'            => 'API-Get-Recent-Activities',
-#        'response-format'       => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Recent-Activities OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Get-Sleep method' do
-#    before(:each) do
-#      @api_method = 'api-get-sleep' 
-#      @api_url = "/1/user/-/sleep/date/#{@date}.#{@response_format}"
-#      @params = {
-#        'api-method'        => 'API-Get-Sleep',
-#        'date'              => @date,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Sleep OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Get-Sleep OAuth request with _user-id_ instead of auth tokens' do
-#      @api_url = "/1/user/#{@user_id}/sleep/date/#{@date}.#{@response_format}"
-#      @params['user-id'] = @user_id
-#      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-#    end
-#
-#    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
 
   context 'API-Get-Time-Series method' do
     before(:each) do
@@ -1580,540 +543,6 @@ describe Fitbit::Api do
       oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
-
-  context 'API-Get-User-Info method' do
-    before(:each) do
-      @api_method = 'api-get-user-info' 
-      @api_url = "/1/user/-/profile.#{@response_format}"
-      @params = {
-        'api-method'        => 'API-Get-User-Info',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Get-User-Info OAuth request' do
-      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should create API-Get-User-Info OAuth request with _user-id_ instead of auth tokens' do
-      @api_url = "/1/user/#{@user_id}/profile.#{@response_format}"
-      @params['user-id'] = @user_id
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-    end
-
-    it 'should return a helpful error if _user-id_ and auth_tokens are missing' do
-      error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-#  context 'API-Get-Water method' do
-#    before(:each) do
-#      @api_method = 'api-get-water' 
-#      @api_url = "/1/user/-/foods/log/water/date/#{@date}.#{@response_format}"
-#      @params = {
-#        'api-method'        => 'API-Get-Water',
-#        'Accept-Language'       => 'en_US',
-#        'date'              => @date,
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Get-Water OAuth request' do
-#      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Log-Blood-Pressure method' do
-#    before(:each) do
-#      @api_method = 'api-log-blood-pressure'
-#      @api_url = "/1/user/-/bp.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Log-Blood-Pressure',
-#        'date'                => @date,
-#        'diastolic'           => '1',
-#        'systolic'            => '1',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Log-Blood-Pressure OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Log-Body-Fat method' do
-#    before(:each) do
-#      @api_method = 'api-log-body-fat'
-#      @api_url = "/1/user/-/body/log/fat.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Log-Body-Fat',
-#        'date'                => @date,
-#        'fat'                 => '1.00',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Log-Body-Fat OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-  context 'ONE required optional' do
-    before(:each) do
-      @api_method = 'api-log-body-measurements'
-      @api_url = "/1/user/-/body.#{@response_format}"
-      @params = {
-        'api-method'          => 'API-Log-Body-Measurements',
-        'bicep'               => '1.00',
-        'date'                => @date,
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Log-Body-Measurements OAuth request' do
-      ignore = ['api-method', 'response-format']
-      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should return a helpful error if required POST Parameters are missing' do
-      @params.delete('date')
-      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-
-    it 'should return a helpful error if none of the _one_required_ POST Parameters are used' do
-      @params.delete('bicep')
-      error_message = helpful_errors(@api_method, 'one_required', @params.keys)
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-#  context 'API-Log-Body-Weight method' do
-#    before(:each) do
-#      @api_method = 'api-log-body-weight'
-#      @api_url = "/1/user/-/body/log/weight.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Log-Body-Weight',
-#        'date'                => @date,
-#        'weight'              => '1.00',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Log-Body-Weight OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Log-Food method' do
-#    before(:each) do
-#      @api_method = 'api-log-food'
-#      @api_url = "/1/user/-/foods/log.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Log-Food',
-#        'date'                => @date,
-#        'foodId'              => @food_id,
-#        'mealTypeId'          => '2',
-#        'unitId'              => '1',
-#        'amount'              => '1.00',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Log-Food OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Log-Food OAuth request with foodName instead of foodId' do
-#      @params.delete('foodId')
-#      @params['foodName'] = @activity_name
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if both _foodId and _foodName exclusive POST Parameters are used' do
-#      @params['foodName'] = @activity_name
-#      error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
-#    end
-#
-#    it 'should return a helpful error if neither _foodId_ nor _foodName exclusive POST Parameters are used' do
-#      @params.delete('foodId')
-#      error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-  context 'API-Log-Glucose method' do
-    before(:each) do
-      @api_method = 'api-log-glucose'
-      @api_url = "/1/user/-/glucose.#{@response_format}"
-      @params = {
-        'api-method'          => 'API-Log-Glucose',
-        'date'                => @date,
-        'hbac1c'              => '1.0',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Log-Glucose OAuth request' do
-      ignore = ['api-method', 'response-format']
-      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should create API-Log-Glucose OAuth request with tracker instead of hbac1c' do
-      @params.delete('hbac1c')
-      @params['tracker'] = @activity_name
-      @params['glucose'] = '1.0'
-      ignore = ['api-method', 'response-format']
-      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should return a helpful error if both _hbac1c and _tracker exclusive POST Parameters are used' do
-      @params['tracker'] = @activity_name
-      error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
-    end
-
-    it 'should return a helpful error if neither _hbac1c nor _tracker exclusive POST Parameters are used' do
-      @params.delete('hbac1c')
-      error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-
-    it 'should return a helpful error if _tracker is used without _glucose' do
-      @params.delete('hbac1c')
-      @params['tracker'] = @activity_name
-      error_message = helpful_errors(@api_method, 'required_if', @params.keys)
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-#  context 'API-Log-Heart-Rate method' do
-#    before(:each) do
-#      @api_method = 'api-log-heart-rate'
-#      @api_url = "/1/user/-/heart.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Log-Heart-Rate',
-#        'date'                => @date,
-#        'heartRate'           => '1',
-#        'tracker'             => "Resting Heart Rate",
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Log-Heart-Rate OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Log-Sleep method' do
-#    before(:each) do
-#      @api_method = 'api-log-sleep'
-#      @api_url = "/1/user/-/sleep.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Log-Sleep',
-#        'date'                => @date,
-#        'startTime'           => @time,
-#        'duration'            => '1000',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Log-Sleep OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Log-Water method' do
-#    before(:each) do
-#      @api_method = 'api-log-water'
-#      @api_url = "/1/user/-/foods/log/water.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Log-Water',
-#        'date'                => @date,
-#        'amount'              => '1.0',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Log-Water OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-  context 'GET request with search query' do
-    before(:each) do
-      @api_method = 'api-search-foods'
-      @api_url = "/1/foods/search.#{@response_format}?query=banana%20cream%20pie"
-      @params = { 
-        'api-method'      => 'API-Search-Foods',
-        'query'           => 'banana cream pie',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Search-Foods OAuth request' do
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
-    end
-  end
-
-  context 'API-Update-Activity-Daily-Goals method' do
-    before(:each) do
-      @api_method = 'api-update-activity-daily-goals'
-      @api_url = "/1/user/-/activities/goals/daily.#{@response_format}"
-      @params = {
-        'api-method'          => 'API-Update-Activity-Daily-Goals',
-        'caloriesOut'         => '1000',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Update-Activity-Daily-Goals OAuth request' do
-      ignore = ['api-method', 'response-format']
-      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should return a helpful error if none of the _one_requiredi_ POST Parameters are used' do
-      @params.delete('caloriesOut')
-      error_message = helpful_errors(@api_method, 'one_required', @params.keys)
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-
-    it 'should return a helpful error if auth_tokens are missing' do
-      error_message = "#{@api_method} requires user auth_token and auth_secret."
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-#  context 'API-Update-Activity-Weekly-Goals method' do
-#    before(:each) do
-#      @api_method = 'api-update-activity-weekly-goals'
-#      @api_url = "/1/user/-/activities/goals/weekly.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Update-Activity-Weekly-Goals',
-#        'steps'               => '1000',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Update-Activity-Weekly-Goals OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if none of the _one_required_optional_ POST Parameters are used' do
-#      @params.delete('steps')
-#      error_message = helpful_errors(@api_method, 'one_required_optional', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Update-Fat-Goal method' do
-#    before(:each) do
-#      @api_method = 'api-update-fat-goal'
-#      @api_url = "/1/user/-/body/log/fat/goal.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Update-Fat-Goal',
-#        'fat'                 => '1.00',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Update-Fat-Goal OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-#  context 'API-Update-Food-Goals method' do
-#    before(:each) do
-#      @api_method = 'api-update-food-goals'
-#      @api_url = "/1/user/-/foods/log/goal.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Update-Food-Goals',
-#        'calories'            => '1000',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Update-Food-Goals OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should create API-Log-Glucose OAuth request with intensity instead of calories' do
-#      @params.delete('calories')
-#      @params['intensity'] = @activity_name
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if both _calories and _intensity exclusive POST Parameters are used' do
-#      @params['intensity'] = @activity_name
-#      error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
-#    end
-#
-#    it 'should return a helpful error if neither _calories nor _intensity exclusive POST Parameters are used' do
-#      @params.delete('calories')
-#      error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
-
-  context 'API-Update-User-Info method' do
-    before(:each) do
-      @api_method = 'api-update-user-info'
-      @api_url = "/1/user/-/profile.#{@response_format}"
-      @params = {
-        'api-method'          => 'API-Update-User-Info',
-        'gender'              => 'MALE',
-        'response-format'     => @response_format,
-      }
-    end
-
-    it 'should create API-Update-User-Info OAuth request' do
-      ignore = ['api-method', 'response-format']
-      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-    it 'should return a helpful error if none of the _one_required_ POST Parameters are used' do
-      @params.delete('gender')
-      error_message = helpful_errors(@api_method, 'one_required', @params.keys)
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-
-    it 'should return a helpful error if auth_tokens are missing' do
-      error_message = "#{@api_method} requires user auth_token and auth_secret."
-      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-    end
-  end
-
-#  context 'API-Update-Weight-Goal method' do
-#    before(:each) do
-#      @api_method = 'api-update-weight-goal'
-#      @api_url = "/1/user/-/body/log/weight/goal.#{@response_format}"
-#      @params = {
-#        'api-method'          => 'API-Update-Weight-Goal',
-#        'startDate'           => @date,
-#        'startWeight'         => '100.00',
-#        'response-format'     => @response_format,
-#      }
-#    end
-#
-#    it 'should create API-Update-Weight-Goal OAuth request' do
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-#    end
-#
-#    it 'should return a helpful error if required POST Parameters are missing' do
-#      error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#
-#    it 'should return a helpful error if auth_tokens are missing' do
-#      error_message = "#{@api_method} requires user auth_token and auth_secret."
-#      lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-#    end
-#  end
     
   def oauth_unauthenticated http_method, api_url, consumer_key, consumer_secret, params
     stub_request(http_method, "api.fitbit.com#{api_url}")

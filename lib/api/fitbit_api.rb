@@ -68,11 +68,9 @@ module Fitbit
         when 'required'
           error = true if supplied_required != required[k]
         when 'exclusive'
-          supplied_exclusive = supplied_required
-          error = true if supplied_exclusive.length != 1
+          error = true if supplied_required.length != 1
         when 'one_required'
-          supplied_one_required = supplied_required
-          error = true if supplied_one_required.length < 1
+          error = true if supplied_required.length < 1
         when 'required_if'
           required[k].each do |k,v|
             error = true if supplied.include? k and !supplied.include? v
@@ -137,8 +135,13 @@ module Fitbit
       fitbit = @@fitbit_methods[api_method]
       http_method = fitbit['http_method']
       request_url = build_url(params, fitbit, http_method)
-      request_headers = get_request_headers(params, fitbit['request_headers']) if fitbit['request_headers']
-      access_token.request( http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
+      request_headers = get_request_headers(params, fitbit) if fitbit['request_headers']
+
+      if http_method == 'get' or http_method == 'delete'
+        access_token.request( http_method, "http://api.fitbit.com#{request_url}", request_headers )
+      else
+        access_token.request( http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
+      end
     end
 
     def build_url params, fitbit, http_method
@@ -147,25 +150,25 @@ module Fitbit
       api_format = get_response_format(params['response-format'])
       api_post_parameters = get_supplied_post_parameters(fitbit, params) if http_method == 'post'
       api_query = uri_encode_query(params['query'])
+
       "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}#{api_post_parameters}"
     end
 
     def get_supplied_post_parameters fitbit, params
       not_post_parameters = ['request_headers', 'url_parameters']
       ignore = ['api-method', 'response-format']
-      post_parameters = {}
       not_post_parameters.each do |x|
         fitbit[x].each { |y| ignore.push(y) } if fitbit[x] 
       end
-      params.each { |k,v| post_parameters[k] = v unless ignore.include? k }
+      post_parameters = params.select { |k,v| !ignore.include? k }
+
       "?" + OAuth::Helper.normalize(post_parameters)
     end
     
-    def get_request_headers params, request_headers
+    def get_request_headers params, fitbit
+      request_headers = fitbit['request_headers']
       available_headers = request_headers & params.keys
-      supplied_headers = {}
-      available_headers.each { |x| supplied_headers[x] = params[x] }
-      supplied_headers ||= ""
+      params.select { |k,v| available_headers.include? k }
     end
 
     def get_url_resources params, fitbit
@@ -262,7 +265,7 @@ module Fitbit
         'url_parameters'      => ['food-id'],
         'resources'           => ['user', '-', 'foods', 'log', 'favorite', '<food-id>'],
       },
-      'api-browse-activites' => {
+      'api-browse-activities' => {
         'auth_required'       => false,
         'http_method'         => 'get',
         'request_headers'     => ['Accept-Locale'],
