@@ -98,27 +98,21 @@ module Fitbit
     end
 
     def post_parameters_error required, supplied
-      required_post_parameters = []
       error = nil
-      required.each do |k,v|
-        case k
-        when 'required' 
-          if error.nil? and required[k] & supplied != required[k]
-            error = "requires POST parameters #{required[k]}. You're missing #{required[k]-supplied}."
-          end
-        when 'exclusive'
-          supplied_exclusive = required[k] & supplied
-          supplied_exclusive_string = supplied_exclusive.join(' AND ')
-          if error.nil? and supplied_exclusive.length == 0
-            error = "requires one of these POST parameters: #{required[k]}."
-          elsif error.nil? and supplied_exclusive.length != 1
-            error = "allows only one of these POST parameters #{required[k]}. You used #{supplied_exclusive_string}."
-          end
-        when 'one_required'
-          error = "requires at least one of the following POST parameters: #{required[k]}." if error.nil?
-        when 'required_if'
+      required.keys.each do |k|
+        supplied_required = required[k] & supplied if k != 'required_if'
+        if k == 'required' and supplied_required != required[k]
+          error = "requires POST parameters #{required[k]}. You're missing #{required[k]-supplied}."
+        elsif k == 'exclusive' and supplied_required.length == 0
+          error = "requires one of these POST parameters: #{required[k]}."
+        elsif k == 'exclusive' and supplied_required.length != 1
+          supplied_required_string = supplied_required.join(' AND ')
+          error = "allows only one of these POST parameters #{required[k]}. You used #{supplied_required_string}."
+        elsif k == 'one_required' and supplied_required.length == 0
+          error = "requires at least one of the following POST parameters: #{required[k]}." 
+        elsif k == 'required_if'
           required[k].each do |k,v|
-            if error.nil? and supplied.include? k and !supplied.include? v
+            if supplied.include? k and !supplied.include? v
               error = "requires POST parameter #{v} when you use POST parameter #{k}."
             end
           end
@@ -152,19 +146,20 @@ module Fitbit
       api_version = @@api_version
       api_url_resources = get_url_resources(params, fitbit['url_parameters'], fitbit['resources'], fitbit['auth_required'])
       api_format = get_response_format(params['response-format'])
-      fitbit_post_parameters = get_fitbit_post_parameters(fitbit['post_parameters'], fitbit['one_required_optional'], fitbit['required_if'])
+      api_post_parameters = get_fitbit_post_parameters(fitbit, params) if http_method == 'post'
       api_query = uri_encode_query(params['query'])
-      api_post_parameters = uri_encode_post_parameters(params, fitbit_post_parameters) if http_method = 'post'
       "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}#{api_post_parameters}"
     end
 
-    def get_fitbit_post_parameters post_parameters, one_required_optional, required_if
-      post_parameters ||= []
-      all_post_parameters = post_parameters.flatten
-      one_required_optional ||= []
-      required_if_values = required_if.values if required_if
-      required_if_values ||= []
-      all_post_parameters |= (one_required_optional |= required_if_values)
+    def get_fitbit_post_parameters fitbit, params
+      not_post_parameters = ['request_headers', 'url_parameters', 'resources']
+      ignore = []
+      post_parameters = {}
+      not_post_parameters.each do |x|
+        fitbit[x].each { |y| ignore.push(y) } if fitbit[x] 
+      end
+      params.each { |k,v| post_parameters[k] = v unless ignore.include? k }
+      uri_encode_post_parameters(post_parameters)
     end
     
     def get_request_headers params, request_headers
@@ -213,17 +208,16 @@ module Fitbit
       end
     end
 
-    def uri_encode_post_parameters params, fitbit_post_parameters
-      request_body = get_request_body(params, fitbit_post_parameters) 
-      if request_body.nil?
+    def uri_encode_post_parameters post_parameters
+      if post_parameters.nil?
         ""
       else
-        post_parameters = ""
-        request_body.each_with_index do |(k,v),i|
-          post_parameters << "&" if i > 0
-          post_parameters << "#{k}=#{v}"
+        url_encoded = ""
+        post_parameters.each_with_index do |(k,v),i|
+          url_encoded << "&" if i > 0
+          url_encoded << OAuth::Helper.normalize({ "#{k}" => "#{v}" })
         end
-        "?#{post_parameters}" if post_parameters != ""
+        "?#{url_encoded}" if url_encoded != ""
       end
     end
 

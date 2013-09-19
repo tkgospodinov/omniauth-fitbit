@@ -39,7 +39,6 @@ describe Fitbit::Api do
   def helpful_errors api_method, data_type, supplied
     required = get_required_data(api_method, data_type)
     required_data = get_url_parameters(required, supplied)
-    missing_data = delete_required_data(required_data, data_type) if required_data
     exclusive_data = get_exclusive_data(api_method, 'post_parameters')
     case data_type
     when 'post_parameters'
@@ -68,7 +67,7 @@ describe Fitbit::Api do
       error = get_required_post_parameters_error(exclusive_data, 'one_required', supplied)
       "#{api_method} " + error
     when 'url_parameters'
-      get_url_parameters_error(api_method, required, required_data, missing_data)
+      get_url_parameters_error(api_method, required, required_data, supplied)
     when 'resource_path'
       get_resource_path_error(supplied)
     else
@@ -114,7 +113,7 @@ describe Fitbit::Api do
     required
   end
 
-  def get_url_parameters_error api_method, required, required_data, missing_data
+  def get_url_parameters_error api_method, required, required_data, supplied
     if required.nil?
       error = "#{api_method} is not a valid API method OR does not have any required parameters."
     elsif required.is_a? Hash
@@ -125,7 +124,7 @@ describe Fitbit::Api do
         count += 1
       end
     else
-      error = "#{api_method} requires #{required_data}. You're missing #{missing_data}."
+      error = "#{api_method} requires #{required_data}. You're missing #{required-supplied}."
     end
     error
   end
@@ -142,14 +141,6 @@ describe Fitbit::Api do
     post_parameters = get_required_data(api_method, data_type)
     exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } if post_parameters
     exclusive_post_parameters.flatten if exclusive_post_parameters
-  end
-
-  def delete_required_data required_data, data_type
-    if data_type == 'url_parameters'
-      required_data.each { |parameter| @params.delete(parameter) }
-    elsif data_type == 'post_parameters'
-      required_data.each { |parameter| @params.delete(parameter) unless parameter.is_a? Array }
-    end
   end
 
   def get_extra_data exclusive_data
@@ -250,6 +241,7 @@ describe Fitbit::Api do
     end
 
     it 'Raises Error: <api-method> requires <required>. You\'re missing <required-supplied>.' do
+      @params.delete('activity-log-id')
       error_message = helpful_errors(@api_method, 'url_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
@@ -279,6 +271,7 @@ describe Fitbit::Api do
     context 'When more than one exclusive parameter is included' do
       it 'Raises Error: <api-method> allows only one of these POST parameters: <exclusive>. You used <supplied>.' do
         @params['activityName'] = @activity_name
+        @params['manualCalories'] = '1000'
         error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
         lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
       end
