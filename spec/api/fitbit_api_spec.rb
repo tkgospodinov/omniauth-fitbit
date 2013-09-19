@@ -265,6 +265,8 @@ describe Fitbit::Api do
       @params.delete('activityId')
       @params['activityName'] = @activity_name
       @params['manualCalories'] = '1000'
+      ignore = ['api-method', 'response-format']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
@@ -308,6 +310,8 @@ describe Fitbit::Api do
     end
 
     it 'should create OAuth request' do
+      ignore = ['api-method', 'response-format', 'from-user-id']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
   end
@@ -389,6 +393,9 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Config-Friends-Leaderboard OAuth request w/ _request headers_' do
+      ignore = ['api-method', 'response-format', 'Accept-Language']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
+
       headers = { 'Accept-Language' => 'en_US' }
       stub_request(:post, "api.fitbit.com#{@api_url}") do |req|
         headers.each_pair do |k,v|
@@ -807,6 +814,8 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Devices-Update-Alarm OAuth request' do
+      ignore = ['api-method', 'response-format', 'Accept-Language', 'device-id', 'alarm-id']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
   end
@@ -1693,6 +1702,8 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Log-Body-Measurements OAuth request' do
+      ignore = ['api-method', 'response-format']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
@@ -1796,6 +1807,8 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Log-Glucose OAuth request' do
+      ignore = ['api-method', 'response-format']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
@@ -1803,6 +1816,8 @@ describe Fitbit::Api do
       @params.delete('hbac1c')
       @params['tracker'] = @activity_name
       @params['glucose'] = '1.0'
+      ignore = ['api-method', 'response-format']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
@@ -1936,6 +1951,8 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Update-Activity-Daily-Goals OAuth request' do
+      ignore = ['api-method', 'response-format']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
@@ -2054,6 +2071,8 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Update-User-Info OAuth request' do
+      ignore = ['api-method', 'response-format']
+      @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
@@ -2106,5 +2125,10 @@ describe Fitbit::Api do
     stub_request(http_method, "api.fitbit.com#{api_url}")
     api_call = subject.api_call(consumer_key, consumer_secret, params, auth_token, auth_secret)
     expect(api_call.class).to eq(Net::HTTPOK)
+  end
+
+  def get_url_with_post_parameters url, params, ignore
+    params.keys.each { |k| params.delete(k) if ignore.include? k } 
+    url + "?" + OAuth::Helper.normalize(params)
   end
 end
