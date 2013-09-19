@@ -43,17 +43,30 @@ describe Fitbit::Api do
     exclusive_data = get_exclusive_data(api_method, 'post_parameters')
     case data_type
     when 'post_parameters'
-      "#{api_method} requires POST parameters #{required_data}. You're missing #{missing_data}."
+      required = get_required_data(api_method, 'post_parameters')
+      required_data = get_required_post_parameters(required, 'required')
+      error = get_required_post_parameters_error(required_data, 'required', supplied)
+      "#{api_method} " + error
     when 'required_exclusive_post_parameters'
-      "#{api_method} requires one of these POST parameters: #{exclusive_data}."
+      required = get_required_data(api_method, 'post_parameters')
+      exclusive_data = get_required_post_parameters(required, 'exclusive')
+      error = get_required_post_parameters_error(exclusive_data, 'exclusive_not_enough', supplied)
+      "#{api_method} " + error
     when 'exclusive_post_parameters'
-      extra_data = get_extra_data(exclusive_data)
-      "#{api_method} allows only one of these POST parameters #{exclusive_data}. You used #{extra_data}."
+      required = get_required_data(api_method, 'post_parameters')
+      exclusive_data = get_required_post_parameters(required, 'exclusive')
+      error = get_required_post_parameters_error(exclusive_data, 'exclusive_too_many', supplied)
+      "#{api_method} " + error
     when 'required_if'
-      required_if = required.values.flatten
-      "#{api_method} requires #{required_if} when you use #{required.keys}."
-    when 'one_required_optional'
-      "#{api_method} requires at least one of the following POST parameters: #{required}."
+      required = get_required_data(api_method, 'post_parameters')
+      exclusive_data = get_required_post_parameters(required, 'required_if')
+      error = get_required_post_parameters_error(exclusive_data, 'required_if', supplied)
+      "#{api_method} " + error
+    when 'one_required'
+      required = get_required_data(api_method, 'post_parameters')
+      exclusive_data = get_required_post_parameters(required, 'one_required')
+      error = get_required_post_parameters_error(exclusive_data, 'one_required', supplied)
+      "#{api_method} " + error
     when 'url_parameters'
       get_url_parameters_error(api_method, required, required_data, missing_data)
     when 'resource_path'
@@ -65,6 +78,31 @@ describe Fitbit::Api do
 
   def get_required_data api_method, data_type
     @fitbit_methods[api_method][data_type] if @fitbit_methods[api_method]
+  end
+
+  def get_required_post_parameters required, type
+    required[type]
+  end
+
+  def get_required_post_parameters_error required, required_type, supplied
+    case required_type
+    when 'required'
+      missing_data = required - supplied
+      "requires POST parameters #{required}. You're missing #{missing_data}."
+    when 'exclusive_too_many'
+      extra_data = get_extra_data(required)
+      "allows only one of these POST parameters #{required}. You used #{extra_data}."
+    when 'exclusive_not_enough'
+      "requires one of these POST parameters: #{required}."
+    when 'one_required'
+      "requires at least one of the following POST parameters: #{required}."
+    when 'required_if'
+      required.each do |k,v|
+        if supplied.include? k and !supplied.include? v
+          return "requires POST parameter #{v} when you use POST parameter #{k}."
+        end
+      end
+    end
   end
 
   def get_url_parameters required, supplied
@@ -95,7 +133,7 @@ describe Fitbit::Api do
   def get_resource_path_error supplied
     resource_path = supplied['resource-path']
     fitbit_resource_paths = subject.get_resource_paths
-    if resource_path && (!fitbit_resource_paths.include? resource_path)
+    if resource_path and !fitbit_resource_paths.include? resource_path
       "#{resource_path} is not a valid Fitbit api-get-time-series resource-path."
     end
   end
@@ -115,7 +153,7 @@ describe Fitbit::Api do
   end
 
   def get_extra_data exclusive_data
-    exclusive_data.map { |data| "'#{data}'" }.join(' AND ')
+    exclusive_data.join(' AND ')
   end
 
   before(:all) do
@@ -216,45 +254,8 @@ describe Fitbit::Api do
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
-  
-  context 'Exclusive POST parameters (where there are several options, but only one can be used at a time)' do
-    before(:each) do
-      @api_method = 'api-create-invite'
-      @api_url = "/1/user/-/friends/invitations.#{@response_format}"
-      @params = {
-        'api-method'          => 'API-Create-Invite',
-        'invitedUserEmail'    => 'email@email.com',
-        'response-format'     => @response_format,
-      }
-    end
 
-    it 'should create OAuth request' do
-      http_method = :post
-      stub_request(:get, "api.fitbit.com#{@api_url}").with(:body => {'invitedUserEmail' => 'email@email.com'})
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call).to eq(Net::HTTPOK)
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
-    end
-
-
-    context 'When more than one exclusive parameter is included' do
-      it 'Raises Error: <api-method> allows only one of these POST parameters: <exclusive>. You used <supplied>.' do
-        @params['invitedUserId'] = @user_id
-        error_message = helpful_errors(@api_method, 'exclusive_post_parameters', @params.keys)
-        lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-      end
-    end
-
-    context 'When at least one exclusive parameter is required, but none are included' do
-      it 'Raises Error: <api-method> requires one of these POST parameters: <required_exclusive>.' do
-        @params.delete('invitedUserEmail')
-        error_message = helpful_errors(@api_method, 'required_exclusive_post_parameters', @params.keys)
-        lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
-      end
-    end
-  end
-
-  context 'Exclusive required POST parameters (where only one, but at least one, POST parameter can be used)' do
+  context 'Exclusive required POST parameters (where one, and only one, of these parameters must be used)' do
     before(:each) do
       @api_method = 'api-log-activity'
       @api_url = "/1/user/-/activities.#{@response_format}"
@@ -266,10 +267,6 @@ describe Fitbit::Api do
         'date'                => @date,
         'response-format'     => @response_format,
       }
-    end
-
-    it 'should create API-Log-Activity OAuth request' do
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
     it 'should create API-Log-Activity OAuth request with activityName instead of activityId' do
@@ -1707,13 +1704,14 @@ describe Fitbit::Api do
     end
 
     it 'should return a helpful error if required POST Parameters are missing' do
+      @params.delete('date')
       error_message = helpful_errors(@api_method, 'post_parameters', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
-    it 'should return a helpful error if none of the _one_required_optional_ POST Parameters are used' do
+    it 'should return a helpful error if none of the _one_required_ POST Parameters are used' do
       @params.delete('bicep')
-      error_message = helpful_errors(@api_method, 'one_required_optional', @params.keys)
+      error_message = helpful_errors(@api_method, 'one_required', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
   end
@@ -1948,9 +1946,9 @@ describe Fitbit::Api do
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
-    it 'should return a helpful error if none of the _one_required_optional_ POST Parameters are used' do
+    it 'should return a helpful error if none of the _one_requiredi_ POST Parameters are used' do
       @params.delete('caloriesOut')
-      error_message = helpful_errors(@api_method, 'one_required_optional', @params.keys)
+      error_message = helpful_errors(@api_method, 'one_required', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 
@@ -2063,16 +2061,12 @@ describe Fitbit::Api do
     end
 
     it 'should create API-Update-User-Info OAuth request' do
-      http_method = :post
-      stub_request(:get, "api.fitbit.com#{@api_url}").with(:body => {'gender' => 'MALE'})
-      api_call = subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret)
-      expect(api_call).to eq(Net::HTTPOK)
-#      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
-    it 'should return a helpful error if none of the _one_required_optional_ POST Parameters are used' do
+    it 'should return a helpful error if none of the _one_required_ POST Parameters are used' do
       @params.delete('gender')
-      error_message = helpful_errors(@api_method, 'one_required_optional', @params.keys)
+      error_message = helpful_errors(@api_method, 'one_required', @params.keys)
       lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
     end
 

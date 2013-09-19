@@ -5,7 +5,7 @@ module Fitbit
       api_params = get_lowercase_api_method(params)
       api_method = api_params['api-method']
       api_error = get_api_errors(api_params, api_method, auth_token, auth_secret)
-      raise api_error if api_error
+      raise "#{api_method} " + api_error if api_error
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
       send_api_request(api_params, api_method, access_token)
     end
@@ -27,24 +27,18 @@ module Fitbit
         no_auth_tokens = true if (auth_token == "" or auth_secret == "")
         get_error_message(params_keys, api_method, required, no_auth_tokens)
       else
-        "#{params['api-method']} is not a valid Fitbit API method." 
+        "is not a valid Fitbit API method." 
       end
     end
 
     def get_error_message params_keys, api_method, required, no_auth_tokens
       if missing_url_parameters? required['url_parameters'], params_keys
-        url_parameters_error(required['url_parameters'], api_method, params_keys)
-      elsif missing_post_parameters? required['post_parameters'], params_keys
-        post_parameters_error(required['post_parameters'], api_method, params_keys)
-      elsif missing_exclusive_post_parameters? required['post_parameters'], params_keys
-        required_exclusive_post_parameters_error(required['post_parameters'], api_method)
-      elsif breaking_exclusive_post_parameter_rule? required['post_parameters'], params_keys
-        multiple_exclusive_post_parameters_error(required['post_parameters'], api_method, params_keys)
-      elsif missing_required_optional_parameters? required['required_if'], params_keys
-        required_optional_parameters_error(required['required_if'], api_method, params_keys)
-      elsif missing_one_required_optional_parameter? required['one_required_optional'], params_keys
-        "#{api_method} requires at least one of the following POST parameters: #{required['one_required_optional']}."
-      elsif required['auth_required'] && no_auth_tokens
+        error = url_parameters_error(required['url_parameters'], params_keys)
+        error
+      elsif required['post_parameters'] and missing_post_parameters? required['post_parameters'], params_keys
+        error = post_parameters_error(required['post_parameters'], params_keys)
+        error
+      elsif required['auth_required'] and no_auth_tokens
         auth_error(api_method, required['auth_required'], params_keys.include?('user-id'))
       end
     end
@@ -56,8 +50,7 @@ module Fitbit
 
     def missing_url_parameters? required, params_keys
       url_parameters = get_url_parameters(required, params_keys)
-      (required) && ((url_parameters.is_a? Hash) || 
-                      (params_keys & url_parameters != url_parameters))
+      required and (url_parameters.is_a? Hash or params_keys & url_parameters != url_parameters)
     end
 
     def get_url_parameters required, params_keys
@@ -69,92 +62,76 @@ module Fitbit
       required
     end
 
-    def missing_post_parameters? required, supplied_parameters
-      required_post_parameters = required.select { |x| x.is_a? String } if required
-      (required_post_parameters) &&
-        (required_post_parameters & supplied_parameters != required_post_parameters)
-    end
-
-    def missing_exclusive_post_parameters? required, supplied_parameters
-      if required
-        required_exclusive = required.select { |x| x.is_a? Array } 
-        required_exclusive.flatten!
-      end
-      supplied_exclusive = required_exclusive & supplied_parameters
-      (required_exclusive) && (required_exclusive.length != 0) &&
-        (supplied_exclusive.length == 0)
-    end
-
-    def breaking_exclusive_post_parameter_rule? required, params_keys
-      exclusive_post_parameters = get_exclusive_post_parameters(required)
-      count = 0
-      if exclusive_post_parameters && params_keys
-        params_keys.each do |x|
-          count += 1 if exclusive_post_parameters.include? x
+    def missing_post_parameters? required, supplied
+      error = false
+      required.each do |k,v|
+        case k
+        when 'required'
+          error = true if required[k] & supplied != required[k]
+        when 'exclusive'
+          supplied_exclusive = required[k] & supplied
+          error = true if supplied_exclusive.length != 1
+        when 'one_required'
+          supplied_one_required = required[k] & supplied
+          error = true if supplied_one_required.length < 1
+        when 'required_if'
+          required[k].each do |k,v|
+            error = true if supplied.include? k and !supplied.include? v
+          end
         end
       end
-      count > 1
+      error
     end
 
-    def missing_required_optional_parameters? required, params_keys
-      required.each { |k,v| return true if (params_keys.include? k) && (params_keys &v != v) } if required
-      false
-    end
-
-    def missing_one_required_optional_parameter? required, params_keys
-      if required
-        one_required = required & params_keys 
-        error = one_required.length == 0
-      end
-      error ||= false
-    end
-
-    def get_exclusive_post_parameters post_parameters
-      exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } if post_parameters 
-      exclusive_post_parameters.flatten if exclusive_post_parameters
-    end
-
-    def url_parameters_error required, api_method, supplied
+    def url_parameters_error required, supplied
       if required.is_a? Hash
         count = 1
-        error = "#{api_method} requires 1 of #{required.length} options: "
+        error = "requires 1 of #{required.length} options: "
         required.keys.each do |x|
           error << "(#{count}) #{required[x]} "
           count += 1
         end
         error
       else
-        "#{api_method} requires #{required}. You're missing #{required-supplied}."
+        "requires #{required}. You're missing #{required-supplied}."
       end
     end
 
-    def post_parameters_error required, api_method, supplied
-      "#{api_method} requires POST parameters #{required}. You're missing #{required-supplied}."
-    end
-
-    def required_exclusive_post_parameters_error required, api_method
-      required_exclusive = required.select{ |x| x.is_a? Array }
-      required_exclusive.flatten!
-      "#{api_method} requires one of these POST parameters: #{required_exclusive}."
-    end
-
-    def multiple_exclusive_post_parameters_error required, api_method, supplied
-      exclusive = get_exclusive_post_parameters(required)
-      all_supplied = exclusive & supplied
-      all_supplied_string = all_supplied.map { |data| "'#{data}'" }.join(' AND ')
-      "#{api_method} allows only one of these POST parameters #{exclusive}. You used #{all_supplied_string}."
-    end
-
-    def required_optional_parameters_error required, api_method, supplied
-      required_if = required.values.flatten
-      "#{api_method} requires #{required_if} when you use #{required.keys}."
+    def post_parameters_error required, supplied
+      required_post_parameters = []
+      error = nil
+      required.each do |k,v|
+        case k
+        when 'required' 
+          if error.nil? and required[k] & supplied != required[k]
+            error = "requires POST parameters #{required[k]}. You're missing #{required[k]-supplied}."
+          end
+        when 'exclusive'
+          supplied_exclusive = required[k] & supplied
+          supplied_exclusive_string = supplied_exclusive.join(' AND ')
+          if error.nil? and supplied_exclusive.length == 0
+            error = "requires one of these POST parameters: #{required[k]}."
+          elsif error.nil? and supplied_exclusive.length != 1
+            error = "allows only one of these POST parameters #{required[k]}. You used #{supplied_exclusive_string}."
+          end
+        when 'one_required'
+          error = "requires at least one of the following POST parameters: #{required[k]}." if error.nil?
+        when 'required_if'
+          required[k].each do |k,v|
+            if error.nil? and supplied.include? k and !supplied.include? v
+              error = "requires POST parameter #{v} when you use POST parameter #{k}."
+            end
+          end
+        end
+      end
+      error
     end
 
     def auth_error api_method, auth_required, auth_supplied
       if auth_required.is_a? String
-        "#{api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]." unless auth_supplied
+        "requires user auth_token and auth_secret, unless you include [\"user-id\"]." unless auth_supplied
       else
-        "#{api_method} requires user auth_token and auth_secret."
+        "requires user auth_token and auth_secret."
       end
     end
 
@@ -165,19 +142,19 @@ module Fitbit
 
     def send_api_request params, api_method, access_token
       fitbit = @@fitbit_methods[api_method]
-      request_url = build_url(params, fitbit)
-      request_http_method = fitbit['http_method']
+      http_method = fitbit['http_method']
+      request_url = build_url(params, fitbit, http_method)
       request_headers = get_request_headers(params, fitbit['request_headers'])
-      access_token.request( request_http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
+      access_token.request( http_method, "http://api.fitbit.com#{request_url}", "",  request_headers )
     end
 
-    def build_url params, fitbit
+    def build_url params, fitbit, http_method
       api_version = @@api_version
       api_url_resources = get_url_resources(params, fitbit['url_parameters'], fitbit['resources'], fitbit['auth_required'])
       api_format = get_response_format(params['response-format'])
       fitbit_post_parameters = get_fitbit_post_parameters(fitbit['post_parameters'], fitbit['one_required_optional'], fitbit['required_if'])
       api_query = uri_encode_query(params['query'])
-      api_post_parameters = uri_encode_post_parameters(params, fitbit_post_parameters)
+      api_post_parameters = uri_encode_post_parameters(params, fitbit_post_parameters) if http_method = 'post'
       "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}#{api_post_parameters}"
     end
 
@@ -212,11 +189,11 @@ module Fitbit
     def add_ids params, api_resources, api_ids, auth_required
       api_resources.each_with_index do |x, i|
         id = x.delete "<>"
-        if api_ids && (api_ids.include? id) && (!api_ids.include? x)
+        if api_ids and api_ids.include? id and !api_ids.include? x
           api_resources[i] = params[id]
           api_ids.delete(x)
         end
-        if x == '-' && auth_required == 'user-id'
+        if x == '-' and auth_required == 'user-id'
           api_resources[i] = params['user-id'] if params['user-id']
         end
       end
@@ -224,7 +201,7 @@ module Fitbit
     end
 
     def get_response_format api_format
-      !api_format.nil? && api_format.downcase == 'json' ? 'json' : 'xml'
+      !api_format.nil? and api_format.downcase == 'json' ? 'json' : 'xml'
     end
 
     def uri_encode_query query
@@ -293,7 +270,9 @@ module Fitbit
       'api-accept-invite' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['accept'],
+        'post_parameters'     => {
+          'required' => ['accept'],
+        },
         'url_parameters' => ['from-user-id'],
         'resources'           => ['user', '-', 'friends', 'invitations', '<from-user-id>'],
       },
@@ -318,21 +297,27 @@ module Fitbit
       'api-config-friends-leaderboard' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['hideMeFromLeaderboard'],
+        'post_parameters'     => {
+          'required' => ['hideMeFromLeaderboard'],
+        },
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'friends', 'leaderboard'],
       },
       'api-create-food' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['name', 'defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
+        'post_parameters'     => {
+          'required' => ['name', 'defaultFoodMeasurementUnitId', 'defaultServingSize', 'calories'],
+        },
         'request_headers'     => ['Accept-Locale'],
         'resources'           => ['foods'],
       },
       'api-create-invite' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     =>  [['invitedUserEmail', 'invitedUserId']],
+        'post_parameters'     =>  {
+          'exlusive' => ['invitedUserEmail', 'invitedUserId'],
+        },
         'resources'           => ['user', '-', 'friends', 'invitations'],
       },
       'api-delete-activity-log' => {
@@ -398,7 +383,9 @@ module Fitbit
       'api-devices-add-alarm' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays'],
+        'post_parameters'     => {
+          'required' => ['time', 'enabled', 'recurring', 'weekDays'],
+        },
         'request_headers'     => ['Accept-Language'],
         'url_parameters' => ['device-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms'],
@@ -418,7 +405,9 @@ module Fitbit
       'api-devices-update-alarm' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['time', 'enabled', 'recurring', 'weekDays', 'snoozeLength', 'snoozeCount'],
+        'post_parameters'     => {
+          'required' => ['time', 'enabled', 'recurring', 'weekDays', 'snoozeLength', 'snoozeCount'],
+        },
         'request_headers'     => ['Accept-Language'],
         'url_parameters' => ['device-id', 'alarm-id'],
         'resources'           => ['user', '-', 'devices', 'tracker', '<device-id>', 'alarms', '<alarm-id>'],
@@ -651,69 +640,92 @@ module Fitbit
       'api-log-activity' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => [['activityId', 'activityName'], 'startTime', 'durationMillis', 'date'],
+        'post_parameters'     => {
+          'exclusive' => ['activityId', 'activityName'], 
+          'required'  => ['startTime', 'durationMillis', 'date'],
+          'required_if'  => { 'activityName' => 'manualCalories' },
+        },
         'request_headers'     => ['Accept-Locale', 'Accept-Language'],
-        'required_if'         => { 'activityName' => ['manualCalories'] },
         'resources'           => ['user', '-', 'activities'],
       },
       'api-log-blood-pressure' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['systolic', 'diastolic', 'date'],
+        'post_parameters'     => {
+          'required' => ['systolic', 'diastolic', 'date'],
+        },
         'resources'           => ['user', '-', 'bp'],
       },
       'api-log-body-fat' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['fat', 'date'],
+        'post_parameters'     => {
+          'required' => ['fat', 'date'],
+        },
         'resources'           => ['user', '-', 'body', 'log', 'fat'],
       },
       'api-log-body-measurements' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'one_required_optional' => ['bicep','calf','chest','fat','forearm','hips','neck','thigh','waist','weight'],
-        'post_parameters'     => ['date'],
+        'post_parameters'     => {
+          'required' => ['date'],
+          'one_required' => ['bicep','calf','chest','fat','forearm','hips','neck','thigh','waist','weight'],
+        },
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'body'],
       },
       'api-log-body-weight' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['weight', 'date'],
+        'post_parameters'     => {
+          'required' => ['weight', 'date'],
+        },
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'body', 'log', 'weight'],
       },
       'api-log-food' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => [['foodId', 'foodName'], 'mealTypeId', 'unitId', 'amount', 'date'],
+        'post_parameters'     => {
+          'exclusive' => ['foodId', 'foodName'], 
+          'required'  => ['mealTypeId', 'unitId', 'amount', 'date'],
+        },
         'request_headers'     => ['Accept-Locale'],
         'resources'           => ['user', '-', 'foods', 'log'],
       },
       'api-log-glucose' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => [['hbac1c', 'tracker'], 'date'],
+        'post_parameters'     => {
+          'exclusive' => ['hbac1c', 'tracker'], 
+          'required'  => ['date'],
+          'required_if'  => { 'tracker' => 'glucose' },
+        },
         'request_headers'     => ['Accept-Language'],
-        'required_if'         => { 'tracker' => ['glucose'] },
         'resources'           => ['user', '-', 'glucose'],
       },
       'api-log-heart-rate' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['tracker', 'heartRate', 'date'],
+        'post_parameters'     => {
+          'required' => ['tracker', 'heartRate', 'date'],
+        },
         'resources'           => ['user', '-', 'heart'],
       },
       'api-log-sleep' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['startTime', 'duration', 'date'],
+        'post_parameters'     => {
+          'required' => ['startTime', 'duration', 'date'],
+        },
         'resources'           => ['user', '-', 'sleep'],
       },
       'api-log-water' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['amount', 'date'],
+        'post_parameters'     => {
+          'required' => ['amount', 'date'],
+        },
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'foods', 'log', 'water'],
       },
@@ -727,45 +739,57 @@ module Fitbit
       'api-update-activity-daily-goals' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'one_required_optional' => ['caloriesOut','activeMinutes','floors','distance','steps'],
+        'post_parameters'     => {
+          'one_required' => ['caloriesOut','activeMinutes','floors','distance','steps'],
+        },
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'activities', 'goals', 'daily'],
       },
       'api-update-activity-weekly-goals' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'one_required_optional' => ['steps','distance','floors'],
+        'post_parameters'     => {
+          'one_required' => ['steps','distance','floors'],
+        },
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'activities', 'goals', 'weekly'],
       },
       'api-update-fat-goal' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['fat'],
+        'post_parameters'     => {
+          'required' => ['fat'],
+        },
         'resources'           => ['user', '-', 'body', 'log', 'fat', 'goal'],
       },
       'api-update-food-goals' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => [['calories', 'intensity']],
+        'post_parameters'     => {
+          'exclusive' => ['calories', 'intensity'],
+        },
         'request_headers'     => ['Accept-Locale', 'Accept-Language'],
         'resources'           => ['user', '-', 'foods', 'log', 'goal'],
       },
       'api-update-user-info' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'one_required_optional' => [
+        'post_parameters'     => {
+          'one_required' => [
           'gender','birthday','height','nickname','aboutMe','fullname','country','state','city',
           'strideLengthWalking','strideLengthRunning','weightUnit','heightUnit','waterUnit','glucoseUnit',
           'timezone','foodsLocale','locale','localeLang','localeCountry'
-        ],
+          ],
+        },
         'request_headers'     => ['Accept-Language'],
         'resources'           => ['user', '-', 'profile'],
       },
       'api-update-weight-goal' => {
         'auth_required'       => true,
         'http_method'         => 'post',
-        'post_parameters'     => ['startDate', 'startWeight'],
+        'post_parameters'     => {
+          'required' => ['startDate', 'startWeight'],
+        },
         'resources'           => ['user', '-', 'body', 'log', 'weight', 'goal'],
       },
     }
