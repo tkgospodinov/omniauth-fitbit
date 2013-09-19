@@ -147,6 +147,7 @@ describe Fitbit::Api do
     exclusive_data.join(' AND ')
   end
 
+
   before(:all) do
     @params = {}
     @consumer_key = random_data(:token)
@@ -413,15 +414,15 @@ describe Fitbit::Api do
     end
 
     it 'GET request with search query' do
-      @api_method = 'api-search-foods'
+      @api_method = 'API-Search-Foods'
       @api_url = "/1/foods/search.#{@response_format}?query=banana%20cream%20pie"
       @params = { 
         'api-method'      => 'API-Search-Foods',
         'query'           => 'banana cream pie',
-        'response-format'     => @response_format,
+        'response-format' => @response_format,
       }
 
-      oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
   end
 
