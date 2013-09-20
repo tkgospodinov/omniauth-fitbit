@@ -557,6 +557,25 @@ describe Fitbit::Api do
       oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
   end
+
+  context 'API-Create-Subscription method' do
+    before(:each) do
+      @api_method = 'api-create-subscription' 
+      @params = {
+        'api-method'        => 'API-Create-Subscription',
+        'collection-path'   => 'activities',
+        'subscription-id'   => '320',
+        'response-format'   => @response_format,
+      }
+      subscription = @params['collection-path']
+      subscription_id = @params['subscription-id']
+      @api_url = "/1/user/-/#{subscription}/apiSubscriptions/#{subscription_id}-#{subscription}.#{@response_format}"
+    end
+
+    it 'Create a subscription to user\'s activities.' do
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+  end
     
   def oauth_unauthenticated http_method, api_url, consumer_key, consumer_secret, params
     stub_request(http_method, "api.fitbit.com#{api_url}")

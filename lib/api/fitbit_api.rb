@@ -156,6 +156,7 @@ module Fitbit
     end
 
     def get_post_parameters params, fitbit
+      return nil if is_subscription? params['api-method']
       not_post_parameters = ['request_headers', 'url_parameters']
       ignore = ['api-method', 'response-format']
       not_post_parameters.each do |x|
@@ -176,21 +177,37 @@ module Fitbit
       params_keys = params.keys
       api_ids = get_url_parameters(fitbit['url_parameters'], params_keys) 
       api_resources = get_url_parameters(fitbit['resources'], params_keys)
-      add_ids(fitbit['auth_required'], api_resources, api_ids, params)
+      add_ids(params, api_ids, api_resources, fitbit['auth_required'])
     end
 
-    def add_ids auth_required, api_resources, api_ids, params
+    def add_ids params, api_ids, api_resources, auth_required
       api_resources.each_with_index do |x, i|
         id = x.delete "<>"
+
         if api_ids and api_ids.include? id and !api_ids.include? x
           api_resources[i] = params[id]
           api_ids.delete(x)
         end
+
         if x == '-' and auth_required == 'user-id'
           api_resources[i] = params['user-id'] if params['user-id']
         end
       end
+
+      if is_subscription? params['api-method']
+        last_index = api_resources.length - 1
+        api_resources[last_index-1] = api_resources[last_index-1] + '-' + api_resources[last_index]
+        api_resources.delete_at(last_index)
+      end
       api_resources.join("/")
+    end
+
+    def is_subscription? api_method
+      if api_method == 'api-create-subscription' or api_method == 'api-delete-subscription'
+        true
+      else
+        false
+      end
     end
 
     def get_response_format api_format
@@ -297,6 +314,12 @@ module Fitbit
           'exlusive' => ['invitedUserEmail', 'invitedUserId'],
         },
         'resources'           => ['user', '-', 'friends', 'invitations'],
+      },
+      'api-create-subscription' => {
+        'auth_required'       => true,
+        'http_method'         => 'post',
+        'url_parameters'      => ['collection-path', 'subscription-id'],
+        'resources'           => ['user', '-', '<collection-path>', 'apiSubscriptions', '<subscription-id>', '<collection-path>']
       },
       'api-delete-activity-log' => {
         'auth_required'       => true,
