@@ -178,27 +178,28 @@ module Fitbit
     end
 
     def add_ids params, api_ids, api_resources, auth_required
-      api_resources.each_with_index do |x, i|
+      api_resources_copy = api_resources.dup
+      api_resources_copy.each_with_index do |x, i|
         id = x.delete "<>"
 
         if api_ids and api_ids.include? id and !api_ids.include? x
-          api_resources[i] = params[id] unless params[id] == ''
-          api_resources.delete(x) if params[id] == ''
+          api_resources_copy[i] = params[id] unless params[id] == ''
+          api_resources_copy.delete(x) if params[id] == ''
           api_ids.delete(x)
         end
 
         if x == '-' and auth_required == 'user-id'
-          api_resources[i] = params['user-id'] if params['user-id']
+          api_resources_copy[i] = params['user-id'] if params['user-id']
         end
       end
 
       if is_subscription? params['api-method'] and params['collection-path'] != ''
-        last_index = api_resources.length - 1
-        api_resources[last_index-1] = api_resources[last_index-1] + '-' + api_resources[last_index]
-        api_resources.delete_at(last_index)
+        last_index = api_resources_copy.length - 1
+        api_resources_copy[last_index-1] = api_resources_copy[last_index-1] + '-' + api_resources_copy[last_index]
+        api_resources_copy.delete_at(last_index)
       end
 
-      api_resources.join("/")
+      api_resources_copy.join("/")
     end
 
     def is_subscription? api_method

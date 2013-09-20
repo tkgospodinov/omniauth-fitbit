@@ -569,11 +569,13 @@ describe Fitbit::Api do
     }
 
     it "Create a subscription to user's activities." do
+      params['collection-path'] = 'food'
       @api_url = "/1/user/-/food/apiSubscriptions/550-food.#{@response_format}"
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, params, @auth_token, @auth_secret
     end
 
     it "Create a subscription to all of a user's changes" do
+      params['collection-path'] = ''
       @api_url = "/1/user/-/apiSubscriptions/550.#{@response_format}"
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, params, @auth_token, @auth_secret
     end
@@ -590,11 +592,13 @@ describe Fitbit::Api do
     }
 
     it "Create a subscription to user's activities." do
-      @api_url = "/1/user/-/food/apiSubscriptions/550-food.#{@response_format}"
+      params['collection-path'] = 'body'
+      @api_url = "/1/user/-/body/apiSubscriptions/550-body.#{@response_format}"
       oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, params, @auth_token, @auth_secret
     end
 
     it "Create a subscription to all of a user's changes" do
+      params['collection-path'] = ''
       @api_url = "/1/user/-/apiSubscriptions/550.#{@response_format}"
       oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, params, @auth_token, @auth_secret
     end
