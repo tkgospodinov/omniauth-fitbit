@@ -550,7 +550,7 @@ describe Fitbit::Api do
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
-    it 'should create API-Get-Time-Series <base-date>/<period> OAuth request with _user-id_ instead of auth tokens' do
+    it 'should create API-Get-Time-Series <base-date>/<period> OAuth request with user-id instead of auth tokens' do
       @params.delete('end-date')
       @params['user-id'] = @user_id
       @api_url = "/1/user/#{@user_id}/#{@resource_path}/date/#{@date_range[0]}/#{@period}.#{@response_format}"
@@ -559,21 +559,23 @@ describe Fitbit::Api do
   end
 
   context 'API-Create-Subscription method' do
-    before(:each) do
-      @api_method = 'api-create-subscription' 
-      @params = {
-        'api-method'        => 'API-Create-Subscription',
-        'collection-path'   => 'activities',
-        'subscription-id'   => '320',
-        'response-format'   => @response_format,
+      let(:params) {
+        {
+          'api-method'        => 'API-Create-Subscription',
+          'collection-path'   => '',
+          'subscription-id'   => '550',
+          'response-format'   => @response_format,
+        }
       }
-      subscription = @params['collection-path']
-      subscription_id = @params['subscription-id']
-      @api_url = "/1/user/-/#{subscription}/apiSubscriptions/#{subscription_id}-#{subscription}.#{@response_format}"
+
+    it "Create a subscription to user's activities." do
+      @api_url = "/1/user/-/food/apiSubscriptions/550-food.#{@response_format}"
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, params, @auth_token, @auth_secret
     end
 
-    it 'Create a subscription to user\'s activities.' do
-      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    it "Create a subscription to all of a user's changes" do
+      @api_url = "/1/user/-/apiSubscriptions/550.#{@response_format}"
+      oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, params, @auth_token, @auth_secret
     end
   end
     
