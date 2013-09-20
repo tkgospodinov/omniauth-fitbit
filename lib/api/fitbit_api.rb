@@ -194,7 +194,11 @@ module Fitbit
     end
 
     def get_response_format api_format
-      !api_format.nil? and api_format.downcase == 'json' ? 'json' : 'xml'
+      if api_format
+        api_format.downcase
+      else
+        'xml'
+      end
     end
 
     def uri_encode_query query

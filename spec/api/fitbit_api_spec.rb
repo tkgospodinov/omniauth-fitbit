@@ -195,6 +195,19 @@ describe Fitbit::Api do
     end
   end
 
+  context 'Missing response-format' do
+    it 'Defaults to xml response-format' do
+      @api_method = 'API-Search-Foods'
+      @api_url = "/1/foods/search.xml?query=banana%20cream%20pie"
+      @params = { 
+        'api-method'      => 'API-Search-Foods',
+        'query'           => 'banana cream pie',
+      }
+
+      oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
+    end
+  end
+
   context 'Missing required URL parameters' do
     before(:each) do
       @api_method = 'api-delete-activity-log'
