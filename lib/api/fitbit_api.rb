@@ -1,7 +1,7 @@
 module Fitbit
   class Api < OmniAuth::Strategies::Fitbit
     
-    def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
+    def api_call consumer_key, consumer_secret, params={'api-method'=>'nil'}, auth_token="", auth_secret=""
       api_params = get_lowercase_api_method(params)
       api_method = api_params['api-method']
       api_error = get_api_errors(api_params, api_method, auth_token, auth_secret)
