@@ -184,7 +184,7 @@ module Fitbit
 
         if api_ids and api_ids.include? id and !api_ids.include? x
           api_resources_copy[i] = params[id] unless params[id] == ''
-          api_resources_copy.delete(x) if params[id] == ''
+          api_resources_copy.delete(x) if x == '<collection-path>' and params[id] == ''
           api_ids.delete(x)
         end
 
