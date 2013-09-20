@@ -309,6 +309,7 @@ module Fitbit
         'auth_required'       => true,
         'http_method'         => 'post',
         'url_parameters'      => ['collection-path', 'subscription-id'],
+        'request_headers'     => ['X-Fitbit-Subscriber-Id'],
         'resources'           => ['user', '-', '<collection-path>', 'apiSubscriptions', '<subscription-id>', '<collection-path>']
       },
       'api-delete-activity-log' => {

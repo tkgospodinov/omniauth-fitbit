@@ -559,14 +559,14 @@ describe Fitbit::Api do
   end
 
   context 'API-Create-Subscription method' do
-      let(:params) {
-        {
-          'api-method'        => 'API-Create-Subscription',
-          'collection-path'   => '',
-          'subscription-id'   => '550',
-          'response-format'   => @response_format,
-        }
+    let(:params) {
+      {
+        'api-method'        => 'API-Create-Subscription',
+        'collection-path'   => '',
+        'subscription-id'   => '550',
+        'response-format'   => @response_format,
       }
+    }
 
     it "Create a subscription to user's activities." do
       @api_url = "/1/user/-/food/apiSubscriptions/550-food.#{@response_format}"
