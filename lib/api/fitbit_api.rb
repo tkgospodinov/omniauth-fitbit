@@ -21,6 +21,11 @@ module Fitbit
 
     private 
 
+    def get_lowercase_api_method params
+      params['api-method'] = params['api-method'].downcase
+      params
+    end
+
     def get_api_errors params, api_method, auth_token="", auth_secret="" 
       required = @@fitbit_methods[api_method]
       params_keys = params.keys
@@ -38,13 +43,8 @@ module Fitbit
       elsif required['post_parameters'] and missing_post_parameters? required['post_parameters'], params_keys
         post_parameters_error(required['post_parameters'], params_keys)
       elsif required['auth_required'] and no_auth_tokens
-        auth_error(api_method, required['auth_required'], params_keys.include?('user-id'))
+        auth_error(required['auth_required'], params_keys.include?('user-id'))
       end
-    end
-
-    def get_lowercase_api_method params
-      params['api-method'] = params['api-method'].downcase
-      params
     end
 
     def missing_url_parameters? required, params_keys
@@ -119,7 +119,7 @@ module Fitbit
       error
     end
 
-    def auth_error api_method, auth_required, auth_supplied
+    def auth_error auth_required, auth_supplied
       if auth_required.is_a? String
         "requires user auth_token and auth_secret, unless you include [\"user-id\"]." unless auth_supplied
       else
@@ -149,13 +149,13 @@ module Fitbit
       api_version = @@api_version
       api_url_resources = get_url_resources(params, fitbit)
       api_format = get_response_format(params['response-format'])
-      api_post_parameters = get_supplied_post_parameters(fitbit, params) if http_method == 'post'
+      api_post_parameters = get_post_parameters(params, fitbit) if http_method == 'post'
       api_query = uri_encode_query(params['query'])
 
       "/#{api_version}/#{api_url_resources}.#{api_format}#{api_query}#{api_post_parameters}"
     end
 
-    def get_supplied_post_parameters fitbit, params
+    def get_post_parameters params, fitbit
       not_post_parameters = ['request_headers', 'url_parameters']
       ignore = ['api-method', 'response-format']
       not_post_parameters.each do |x|
@@ -194,11 +194,7 @@ module Fitbit
     end
 
     def get_response_format api_format
-      if api_format
-        api_format.downcase
-      else
-        'xml'
-      end
+      api_format ? api_format.downcase : 'xml'
     end
 
     def uri_encode_query query
