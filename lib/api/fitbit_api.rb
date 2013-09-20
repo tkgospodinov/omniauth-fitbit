@@ -366,6 +366,12 @@ module Fitbit
         'url_parameters'      => ['sleep-log-id'],
         'resources'           => ['user', '-', 'sleep', '<sleep-log-id>'],
       },
+      'api-delete-subscription' => {
+        'auth_required'       => 'user-id',
+        'http_method'         => 'delete',
+        'url_parameters'      => ['collection-path', 'subscription-id'],
+        'resources'           => ['user', '-', '<collection-path>', 'apiSubscriptions', '<subscription-id>', '<collection-path>']
+      },
       'api-delete-water-log' => {
         'auth_required'       => true,
         'http_method'         => 'delete',
