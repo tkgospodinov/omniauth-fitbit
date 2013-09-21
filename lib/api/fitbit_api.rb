@@ -174,7 +174,8 @@ module Fitbit
       params_keys = params.keys
       api_ids = get_url_parameters(fitbit['url_parameters'], params_keys) 
       api_resources = get_url_parameters(fitbit['resources'], params_keys)
-      add_ids(params, api_ids, api_resources, fitbit['auth_required'])
+      dynamic_url = add_ids(params, api_ids, api_resources, fitbit['auth_required']) if api_ids or params['user-id']
+      dynamic_url ||= api_resources.join("/")
     end
 
     def add_ids params, api_ids, api_resources, auth_required
@@ -182,21 +183,16 @@ module Fitbit
       api_resources_copy.each_with_index do |x, i|
         id = x.delete "<>"
 
-        if api_ids and api_ids.include? id and !api_ids.include? x
-          api_resources_copy[i] = params[id] unless params[id] == ''
-          api_resources_copy.delete(x) if x == '<collection-path>' and params[id] == ''
-          api_ids.delete(x)
+        if x == '-' and auth_required == 'user-id' and params['user-id']
+          api_resources_copy[i] = params['user-id']
+        elsif id == 'collection-path' and params[id] == 'all'
+          api_resources_copy.delete(x)
+        elsif id == 'subscription-id' and params['collection-path'] != 'all'
+          api_resources_copy[i] = params[id] + "-" + params['collection-path']
+          api_resources_copy.delete('<collection-path>')
+        elsif api_ids and api_ids.include? id and !api_ids.include? x 
+          api_resources_copy[i] = params[id]
         end
-
-        if x == '-' and auth_required == 'user-id'
-          api_resources_copy[i] = params['user-id'] if params['user-id']
-        end
-      end
-
-      if is_subscription? params['api-method'] and params['collection-path'] != ''
-        last_index = api_resources_copy.length - 1
-        api_resources_copy[last_index-1] = api_resources_copy[last_index-1] + '-' + api_resources_copy[last_index]
-        api_resources_copy.delete_at(last_index)
       end
 
       api_resources_copy.join("/")

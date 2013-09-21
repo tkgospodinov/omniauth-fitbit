@@ -562,7 +562,7 @@ describe Fitbit::Api do
     before(:each) do
       @params = {
         'api-method'        => 'API-Create-Subscription',
-        'collection-path'   => '',
+        'collection-path'   => 'all',
         'subscription-id'   => '550',
         'response-format'   => @response_format,
       }
@@ -584,7 +584,7 @@ describe Fitbit::Api do
     before(:each) do
       @params = {
         'api-method'        => 'API-Delete-Subscription',
-        'collection-path'   => '',
+        'collection-path'   => 'all',
         'subscription-id'   => '303',
         'response-format'   => @response_format,
       }
