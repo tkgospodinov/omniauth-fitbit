@@ -4,7 +4,7 @@ module Fitbit
     def api_call consumer_key, consumer_secret, params, auth_token="", auth_secret=""
       api_params = get_lowercase_api_method(params)
       api_method = api_params['api-method']
-      fitbit = @@fitbit_methods[api_method] if @@fitbit_methods[api_method]
+      fitbit = @@fitbit_methods[api_method]
       api_error = get_api_errors(api_params.keys, fitbit, auth_token, auth_secret)
       raise "#{api_method} " + api_error if api_error
       access_token = build_request(consumer_key, consumer_secret, auth_token, auth_secret)
@@ -119,9 +119,9 @@ module Fitbit
     end
 
     def auth_error auth_required, auth_supplied
-      if auth_required.is_a? String
-        "requires user auth_token and auth_secret, unless you include [\"user-id\"]." unless auth_supplied
-      else
+      if auth_required == 'user-id' and !auth_supplied
+        "requires user auth_token and auth_secret, unless you include [\"user-id\"]."
+      elsif auth_required != 'user-id'
         "requires user auth_token and auth_secret."
       end
     end
@@ -175,7 +175,8 @@ module Fitbit
       api_ids = get_url_parameters(fitbit['url_parameters'], params_keys) 
       api_resources = get_url_parameters(fitbit['resources'], params_keys)
       dynamic_url = add_ids(params, api_ids, api_resources, fitbit['auth_required']) if api_ids or params['user-id']
-      dynamic_url ||= api_resources.join("/")
+      dynamic_url ||= api_resources
+      dynamic_url.join("/")
     end
 
     def add_ids params, api_ids, api_resources, auth_required
@@ -194,8 +195,6 @@ module Fitbit
           api_resources_copy[i] = params[id]
         end
       end
-
-      api_resources_copy.join("/")
     end
 
     def is_subscription? api_method
