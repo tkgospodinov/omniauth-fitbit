@@ -61,19 +61,20 @@ module Fitbit
     end
 
     def missing_post_parameters? required, supplied
-      error = false
+      error = nil
       required.each do |k,v|
         supplied_required = required[k] & supplied if k != 'required_if'
         case k
         when 'required'
-          error = true if supplied_required != required[k]
+          error = k if supplied_required != required[k]
         when 'exclusive'
-          error = true if supplied_required.length != 1
+          error = k + '_too_few' if supplied_required.length < 1
+          error = k + '_too_many' if supplied_required.length > 1
         when 'one_required'
-          error = true if supplied_required.length < 1
+          error = k if supplied_required.length < 1
         when 'required_if'
-          required[k].each do |k,v|
-            error = true if supplied.include? k and !supplied.include? v
+          required[k].each do |key,v|
+            error = k if supplied.include? key and !supplied.include? v
           end
         end
       end
@@ -95,27 +96,28 @@ module Fitbit
     end
 
     def post_parameters_error required, supplied
-      error = nil
-      required.keys.each do |k|
-        supplied_required = required[k] & supplied if k != 'required_if'
-        if k == 'required' and supplied_required != required[k]
-          error = "requires POST parameters #{required[k]}. You're missing #{required[k]-supplied}."
-        elsif k == 'exclusive' and supplied_required.length == 0
-          error = "requires one of these POST parameters: #{required[k]}."
-        elsif k == 'exclusive' and supplied_required.length != 1
-          supplied_required_string = supplied_required.join(' AND ')
-          error = "allows only one of these POST parameters #{required[k]}. You used #{supplied_required_string}."
-        elsif k == 'one_required' and supplied_required.length == 0
-          error = "requires at least one of the following POST parameters: #{required[k]}." 
-        elsif k == 'required_if'
-          required[k].each do |k,v|
-            if supplied.include? k and !supplied.include? v
-              error = "requires POST parameter #{v} when you use POST parameter #{k}."
-            end
+      error_type = missing_post_parameters? required, supplied
+      e = 'exclusive' if error_type == 'exclusive_too_few' or error_type == 'exclusive_too_many'
+      e ||= error_type
+
+      case error_type
+      when 'required'
+        "requires POST parameters #{required[e]}. You're missing #{required[e]-supplied}."
+      when 'exclusive_too_few'
+        "requires one of these POST parameters: #{required[e]}."
+      when 'exclusive_too_many'
+        supplied_required = required[e] & supplied
+        supplied_required_string = supplied_required.join(' AND ')
+        "allows only one of these POST parameters #{required[e]}. You used #{supplied_required_string}."
+      when 'one_required'
+        "requires at least one of the following POST parameters: #{required[e]}."
+      when 'required_if'
+        required[e].each do |k,v|
+          if supplied.include? k and !supplied.include? v
+            return "requires POST parameter #{v} when you use POST parameter #{k}."
           end
         end
       end
-      error
     end
 
     def auth_error auth_required, auth_supplied
