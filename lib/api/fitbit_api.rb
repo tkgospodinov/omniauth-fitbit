@@ -73,8 +73,8 @@ module Fitbit
         when 'one_required'
           error = k if supplied_required.length < 1
         when 'required_if'
-          required[k].each do |key,v|
-            error = k if supplied.include? key and !supplied.include? v
+          required[k].each do |key,val|
+            error = k if supplied.include? key and !supplied.include? val
           end
         end
       end
