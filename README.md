@@ -37,7 +37,7 @@ For a short tutorial on how to use OmniAuth in your Rails application, visit [th
 An API call can be instantiated with `Fitbit::Api.new({}).api_call()`  
 Each call requires:
 * Fitbit consumer_key and consumer_secret
-* A params Hash containing the Fitbit api method, plus all required api parameters (see the FitBit Api docs for details)
+* A params Hash containing the Fitbit API method, plus all required parameters 
 * Optionally, for authenticated API calls, your user's Fitbit auth token and auth secret
 
 An example of an authenticated API call: 
@@ -52,7 +52,7 @@ Fitbit::Api.new({}).api_call(
 )
 ```
 
-The OmniAuth Fitbit API wrapper supports the Fitbit Resource Access API and the Fitbit Subscriptions API.
+OmniAuth Fitbit supports the Fitbit Resource Access API and the Fitbit Subscriptions API.
 
 To access the Resource Access API, consult the API docs and provide the required parameters. For example,
 the API-Search-Foods method requires 'api-version', 'query' and 'response-format'. There's also an optional
