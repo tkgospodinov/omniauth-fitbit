@@ -32,7 +32,7 @@ For additional information about OmniAuth, visit [OmniAuth wiki](https://github.
 
 For a short tutorial on how to use OmniAuth in your Rails application, visit [this tutsplus.com tutorial](http://net.tutsplus.com/tutorials/ruby/how-to-use-omniauth-to-authenticate-your-users/).
 
-## Accessing the FitBit API
+## Accessing the Fitbit API
 
 An API call can be instantiated with `Fitbit::Api.new({}).api_call()`  
 Each call requires:
@@ -77,13 +77,16 @@ def fibit_foods_search
 end
 ```
 
-A couple notes: 'api-version' defaults to '1' and can be omitted from OmniAuth Fitbit API calls.
+A few notes: 'api-version' defaults to '1' and can be omitted from OmniAuth Fitbit API calls.
 If you omit the 'response-format', the response will be in the default xml format.
+Some authenticated API methods can be accessed without auth tokens, if you supply a user's
+user-id (see the API docs for details).
 
 To access the Subscription API, two new api methods were created just for this gem:
-API-Create-Subscription and API-Delete-Subscription. The syntax is the same as above. Read the
-API docs and supply the required parameters 'collection-path' and 'subscription-id'. 
-NOTE: To subscribe to ALL of a user's changes make 'collection-path' = 'all'.
+API-Create-Subscription and API-Delete-Subscription. These api methods only exist in this gem,
+not the Fitbit API. If you consult the Subscription API docs for adding and deleting subscriptions,
+and supply the required parameters, these two api methods work just as described for the
+Resource Access API. NOTE: To subscribe to ALL of a user's changes, make 'collection-path' = 'all'.
 
 ## Copyright
 
