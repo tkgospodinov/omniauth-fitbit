@@ -66,6 +66,24 @@ describe Fitbit::Api do
     end
   end
 
+  context 'Missing URL parameters when API method supports multiple dynamic urls based on date or time period' do
+    before(:each) do
+      @api_method = 'api-get-body-fat'
+      @api_url = "/1/user/-/body/log/fat/date/#{@date}.#{@response_format}"
+      @params = {
+        'api-method'          => 'API-Get-Body-Fat',
+        'date'                => @date,
+        'response-format'     => @response_format,
+      }
+    end
+
+    it "Raises Error: <api-method> requires 1 of 3 options: (1) ['date'] (2) ['base-date', 'end-date'] (3) ['base-date', 'period']" do
+      @params.delete('date')
+      error_message = helpful_errors(@params['api-method'], 'url_parameters', @params.keys)
+      lambda { subject.api_call(@consumer_key, @consumer_secret, @params, @auth_token, @auth_secret) }.should raise_error(RuntimeError, error_message)
+    end
+  end
+
   context 'Missing required auth tokens or user-id' do
     it 'Raises Error: <api-method> requires user auth_token and auth_secret' do
       @api_method = 'api-accept-invite'
@@ -226,7 +244,7 @@ describe Fitbit::Api do
       oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 
-    context 'GET request with multiple possible urls based on date or time period' do
+    context 'GET request with multiple dynamic urls based on date or time period' do
       before(:each) do
         @api_method = 'api-get-body-fat'
         @api_url = "/1/user/-/body/log/fat/date/#{@date}.#{@response_format}"
@@ -398,7 +416,7 @@ describe Fitbit::Api do
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
-    it "Create a subscription to user's activities." do
+    it "Create a subscription to user's foods." do
       @params['collection-path'] = 'foods'
       @api_url = "/1/user/-/foods/apiSubscriptions/550-foods.#{@response_format}"
       oauth_authenticated :post, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
@@ -420,7 +438,7 @@ describe Fitbit::Api do
       oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
 
-    it "Delete a subscription to user's activities." do
+    it "Delete a subscription to user's body." do
       @params['collection-path'] = 'body'
       @api_url = "/1/user/-/body/apiSubscriptions/303-body.#{@response_format}"
       oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret

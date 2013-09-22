@@ -95,17 +95,20 @@ module FitbitApiHelper
 
   def get_url_parameters required, supplied
     if required.is_a? Hash
-      required.keys.each do |x|
-        return required[x] if supplied.include? x
-      end
+      get_dynamic_url_parameters(required, supplied)
+    else
+      required
     end
-    required
+  end
+
+  def get_dynamic_url_parameters required, supplied
+    required.keys.each do |x|
+      return required[x] if supplied.include? x
+    end
   end
 
   def get_url_parameters_error required, required_data, supplied
-    if required.nil?
-      error = "is not a valid API method OR does not have any required parameters."
-    elsif required.is_a? Hash
+    if required.is_a? Hash
       count = 1
       error = "requires 1 of #{required.length} options: "
       required.keys.each do |x|

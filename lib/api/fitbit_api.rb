@@ -48,16 +48,21 @@ module Fitbit
 
     def missing_url_parameters? required, supplied
       url_parameters = get_url_parameters(required, supplied)
-      required and (url_parameters.is_a? Hash or supplied & url_parameters != url_parameters)
+      required and supplied & url_parameters != url_parameters
     end
 
     def get_url_parameters required, supplied
       if required.is_a? Hash
-        required.keys.each do |x| 
-          return required[x] if supplied.include? x 
-        end
+        get_dynamic_url_parameters(required, supplied)
+      else
+        required
       end
-      required
+    end
+
+    def get_dynamic_url_parameters required, supplied
+      required.keys.each do |x| 
+        return required[x] if supplied.include? x 
+      end
     end
 
     def missing_post_parameters? required, supplied
