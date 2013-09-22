@@ -22,38 +22,9 @@ module FitbitApiHelper
     when :resource_path
       resource_paths = [
         'activities/calories',
-        'activities/caloriesBMR',
-        'activities/steps',
-        'activities/distance',
-        'activities/floors',
-        'activities/elevation',
-        'activities/minutesSedentary',
-        'activities/minutesLightlyActive',
-        'activities/minutesFairlyActive',
-        'activities/minutesVeryActive',
-        'activities/activityCalories',
-        'activities/tracker/calories',
-        'activities/tracker/steps',
-        'activities/tracker/distance',
-        'activities/tracker/floors',
-        'activities/tracker/minutesSedentary',
-        'activities/tracker/minutesLightlyActive',
-        'activities/tracker/minutesFairlyActive',
-        'activities/tracker/minutesVeryActive',
-        'activities/tracker/activityCalories',
         'body/weight',
-        'body/bmi',
-        'body/fat',
         'foods/log/caloriesIn',
-        'foods/log/water',
-        'sleep/startTime',
-        'sleep/timeInBed',
-        'sleep/minutesAsleep',
-        'sleep/awakeningsCount',
-        'sleep/minutesAwake',
-        'sleep/minutesToFallAsleep',
-        'sleep/minutesAfterWakeup',
-        'sleep/efficiency'
+        'sleep/startTime'
       ]
       resource_paths.sample
     when :time
@@ -68,28 +39,41 @@ module FitbitApiHelper
   def helpful_errors supplied_api_method, error_type, supplied
     api_method = supplied_api_method.downcase
     required = get_required_data(api_method, error_type)
-    required_data = get_required_post_parameters(required, error_type)
+    if error_type == 'url_parameters'
+      required_data = get_url_parameters(required, supplied)
+    else
+      required_data = get_required_post_parameters(required, error_type)
+    end
 
     case error_type
     when 'post_parameters'
-      error = get_required_post_parameters_error(required_data, 'required', supplied)
+      missing_data = required_data - supplied
+      error = "requires POST parameters #{required_data}. You're missing #{missing_data}."
     when 'exclusive_too_many'
-      error = get_required_post_parameters_error(required_data, 'exclusive_not_enough', supplied)
+      extra_data = required_data.join(' AND ')
+      error = "allows only one of these POST parameters #{required_data}. You used #{extra_data}."
     when 'exclusive_too_few'
-      error = get_required_post_parameters_error(required_data, 'exclusive_too_many', supplied)
+      error = "requires one of these POST parameters: #{required_data}."
     when 'required_if'
-      error = get_required_post_parameters_error(required_data, 'required_if', supplied)
+      error = get_required_if_error(required_data, supplied)
     when 'one_required'
-      error = get_required_post_parameters_error(required_data, 'one_required', supplied)
+      error = "requires at least one of the following POST parameters: #{required_data}."
     when 'url_parameters'
-      required_data = get_url_parameters(required, supplied)
-      error = get_url_parameters_error(api_method, required, required_data, supplied)
+      error = get_url_parameters_error(required, required_data, supplied)
     when 'resource_path'
       error = get_resource_path_error(supplied)
     else
       error = "is not a valid api method."
     end
     "#{api_method} " + error
+  end
+
+  def get_required_if_error required, supplied
+    required.each do |k,v|
+      if supplied.include? k and !supplied.include? v
+        return "requires POST parameter #{v} when you use POST parameter #{k}."
+      end
+    end
   end
 
   def get_required_data api_method, error_type
@@ -99,40 +83,13 @@ module FitbitApiHelper
     fitbit_methods[api_method][data_type] if fitbit_methods[api_method]
   end
 
-  def get_resource_paths
-    fitbit_resource_paths = subject.get_resource_paths
-  end
-
   def get_required_post_parameters required, error_type
-    if error_type == 'url_parameters'
-      nil
-    elsif error_type == 'post_parameters'
+    if error_type == 'post_parameters'
       required['required']
     elsif error_type == 'exclusive_too_many' or error_type == 'exclusive_too_few'
       required['exclusive']
     else
       required[error_type]
-    end
-  end
-
-  def get_required_post_parameters_error required, required_type, supplied
-    case required_type
-    when 'required'
-      missing_data = required - supplied
-      "requires POST parameters #{required}. You're missing #{missing_data}."
-    when 'exclusive_too_many'
-      extra_data = get_extra_data(required)
-      "allows only one of these POST parameters #{required}. You used #{extra_data}."
-    when 'exclusive_not_enough'
-      "requires one of these POST parameters: #{required}."
-    when 'one_required'
-      "requires at least one of the following POST parameters: #{required}."
-    when 'required_if'
-      required.each do |k,v|
-        if supplied.include? k and !supplied.include? v
-          return "requires POST parameter #{v} when you use POST parameter #{k}."
-        end
-      end
     end
   end
 
@@ -145,7 +102,7 @@ module FitbitApiHelper
     required
   end
 
-  def get_url_parameters_error api_method, required, required_data, supplied
+  def get_url_parameters_error required, required_data, supplied
     if required.nil?
       error = "is not a valid API method OR does not have any required parameters."
     elsif required.is_a? Hash
@@ -161,22 +118,16 @@ module FitbitApiHelper
     error
   end
 
+  def get_resource_paths
+    fitbit_resource_paths = subject.get_resource_paths
+  end
+
   def get_resource_path_error supplied
     resource_path = supplied['resource-path']
     fitbit_resource_paths = subject.get_resource_paths
     if resource_path and !fitbit_resource_paths.include? resource_path
       "is not a valid Fitbit api-get-time-series resource-path."
     end
-  end
-
-  def get_exclusive_data api_method, data_type
-    post_parameters = get_required_data(api_method, data_type)
-    exclusive_post_parameters = post_parameters.select { |x| x.is_a? Array } if post_parameters
-    exclusive_post_parameters.flatten if exclusive_post_parameters
-  end
-
-  def get_extra_data exclusive_data
-    exclusive_data.join(' AND ')
   end
     
   def oauth_unauthenticated http_method, api_url, consumer_key, consumer_secret, params

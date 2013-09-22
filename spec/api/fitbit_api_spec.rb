@@ -84,8 +84,8 @@ describe Fitbit::Api do
       @api_method = 'api-get-badges' 
       @api_url = "/1/user/-/badges.#{@response_format}"
       @params = {
-        'api-method'      => 'API-Get-Badges',
-        'Accept-Locale'   => 'en_US',
+        'api-method'          => 'API-Get-Badges',
+        'Accept-Locale'       => 'en_US',
         'response-format'     => @response_format,
       }
       error_message = "#{@api_method} requires user auth_token and auth_secret, unless you include [\"user-id\"]."
@@ -165,7 +165,7 @@ describe Fitbit::Api do
       it 'Raises Error: <api-method> allows only one of these POST parameters: <exclusive>. You used <supplied>.' do
         @params['activityName'] = @fitbit_id
         @params['manualCalories'] = '1000'
-        error_message = helpful_errors(@params['api-method'], 'exclusive_too_few', @params.keys)
+        error_message = helpful_errors(@params['api-method'], 'exclusive_too_many', @params.keys)
         lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
       end
     end
@@ -173,7 +173,7 @@ describe Fitbit::Api do
     context 'When none of the exclusive parameters are included' do
       it 'Raises Error: <api-method> requires one of these POST parameters: <exclusive>.' do
         @params.delete('activityId')
-        error_message = helpful_errors(@params['api-method'], 'exclusive_too_many', @params.keys)
+        error_message = helpful_errors(@params['api-method'], 'exclusive_too_few', @params.keys)
         lambda { subject.api_call(@consumer_key, @consumer_secret, @params) }.should raise_error(RuntimeError, error_message)
       end
     end
@@ -208,9 +208,9 @@ describe Fitbit::Api do
     it 'GET request with dynamic url parameter' do
       @api_url = "/1/user/-/devices/tracker/#{@fitbit_id}/alarms.#{@response_format}"
       @params = {
-        'api-method'    => 'API-Devices-Get-Alarms',
-        'device-id'     => @fitbit_id,
-        'response-format'     => @response_format,
+        'api-method'        => 'API-Devices-Get-Alarms',
+        'device-id'         => @fitbit_id,
+        'response-format'   => @response_format,
       }
       oauth_authenticated :get, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
@@ -218,8 +218,8 @@ describe Fitbit::Api do
     it 'GET request with user-id authentication instead of auth tokens' do
       @api_url = "/1/user/#{@fitbit_id}/activities.#{@response_format}"
       @params = {
-        'api-method'      => 'API-Get-Activity-Stats',
-        'Accept-Language' => 'en_US',
+        'api-method'          => 'API-Get-Activity-Stats',
+        'Accept-Language'     => 'en_US',
         'response-format'     => @response_format,
       }
       @params['user-id'] = @fitbit_id
@@ -231,8 +231,8 @@ describe Fitbit::Api do
         @api_method = 'api-get-body-fat'
         @api_url = "/1/user/-/body/log/fat/date/#{@date}.#{@response_format}"
         @params = {
-          'api-method'      => 'API-Get-Body-Fat',
-          'date'            => @date,
+          'api-method'          => 'API-Get-Body-Fat',
+          'date'                => @date,
           'response-format'     => @response_format,
         }
       end
@@ -277,7 +277,7 @@ describe Fitbit::Api do
         'api-method'            => 'API-Config-Friends-Leaderboard',
         'hideMeFromLeaderboard' => 'true',
         'Accept-Language'       => 'en_US',
-        'response-format'     => @response_format,
+        'response-format'       => @response_format,
       }
       ignore = ['api-method', 'response-format', 'Accept-Language']
       @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
@@ -320,7 +320,7 @@ describe Fitbit::Api do
         'snoozeCount'     => '2',
         'vibe'            => 'DEFAULT',
         'Accept-Language' => 'en_US', 
-        'response-format'     => @response_format,
+        'response-format' => @response_format,
       }
       ignore = ['api-method', 'response-format', 'Accept-Language', 'device-id', 'alarm-id']
       @api_url = get_url_with_post_parameters(@api_url, @params.dup, ignore)
@@ -334,7 +334,7 @@ describe Fitbit::Api do
       @params = {
         'api-method'      => 'API-Delete-Activity-Log',
         'activity-log-id' => @fitbit_id, 
-        'response-format'     => @response_format,
+        'response-format' => @response_format,
       }
       oauth_authenticated :delete, @api_url, @consumer_key, @consumer_secret, @params, @auth_token, @auth_secret
     end
@@ -355,12 +355,12 @@ describe Fitbit::Api do
     before(:each) do
       @api_url = "/1/user/-/#{@resource_path}/date/#{@date_range[0]}/#{@date_range[1]}.#{@response_format}"
       @params = {
-        'api-method'            => 'API-Get-Time-Series',
-        'response-format'       => @response_format,
-        'base-date' => @date_range[0],
-        'end-date'  => @date_range[1],
-        'period'    => @period,
-        'resource-path' => @resource_path,
+        'api-method'          => 'API-Get-Time-Series',
+        'response-format'     => @response_format,
+        'base-date'           => @date_range[0],
+        'end-date'            => @date_range[1],
+        'period'              => @period,
+        'resource-path'       => @resource_path,
       }
     end
 
