@@ -16,7 +16,6 @@ describe Fitbit::Api do
     @consumer_secret = random_data(:token)
     @auth_token = random_data(:token)
     @auth_secret = random_data(:token)
-    
     @date = random_data(:fixed_date)
     @date_range = random_data(:date_range)
     @fitbit_id = random_data(:fitbit_id)
@@ -66,7 +65,7 @@ describe Fitbit::Api do
     end
   end
 
-  context 'Missing URL parameters when API method supports multiple dynamic urls based on date or time period' do
+  context 'Missing URL parameters when API method supports multiple dynamic urls based on date or date range' do
     before(:each) do
       @api_method = 'api-get-body-fat'
       @api_url = "/1/user/-/body/log/fat/date/#{@date}.#{@response_format}"
@@ -239,8 +238,8 @@ describe Fitbit::Api do
         'api-method'          => 'API-Get-Activity-Stats',
         'Accept-Language'     => 'en_US',
         'response-format'     => @response_format,
+        'user-id'             => @fitbit_id,
       }
-      @params['user-id'] = @fitbit_id
       oauth_unauthenticated :get, @api_url, @consumer_key, @consumer_secret, @params
     end
 

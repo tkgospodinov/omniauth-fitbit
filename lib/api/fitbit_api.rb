@@ -15,14 +15,10 @@ module Fitbit
       @@fitbit_methods
     end
 
-    def get_resource_paths
-      @@resource_paths
-    end
-
     private 
 
     def get_lowercase_api_method params
-      params['api-method'] = 'nil' unless params['api-method']
+      params['api-method'] ||= nil
       params['api-method'].downcase!
       params
     end
@@ -88,16 +84,18 @@ module Fitbit
 
     def url_parameters_error required, supplied
       if required.is_a? Hash
-        count = 1
-        error = "requires 1 of #{required.length} options: "
-        required.keys.each do |x|
-          error << "(#{count}) #{required[x]} "
-          count += 1
-        end
-        error
+        get_dynamic_url_error(required, supplied)
       else
         "requires #{required}. You're missing #{required-supplied}."
       end
+    end
+
+    def get_dynamic_url_error required, supplied
+      error = "requires 1 of #{required.length} options: "
+      required.keys.each_with_index do |x,i|
+        error << "(#{i+1}) #{required[x]} "
+      end
+      error
     end
 
     def post_parameters_error required, supplied
@@ -217,42 +215,6 @@ module Fitbit
     end
 
     @@api_version = 1
-
-    @@resource_paths = [
-      'activities/calories',
-      'activities/caloriesBMR',
-      'activities/steps',
-      'activities/distance',
-      'activities/floors',
-      'activities/elevation',
-      'activities/minutesSedentary',
-      'activities/minutesLightlyActive',
-      'activities/minutesFairlyActive',
-      'activities/minutesVeryActive',
-      'activities/activityCalories',
-      'activities/tracker/calories',
-      'activities/tracker/steps',
-      'activities/tracker/distance',
-      'activities/tracker/floors',
-      'activities/tracker/minutesSedentary',
-      'activities/tracker/minutesLightlyActive',
-      'activities/tracker/minutesFairlyActive',
-      'activities/tracker/minutesVeryActive',
-      'activities/tracker/activityCalories',
-      'body/weight',
-      'body/bmi',
-      'body/fat',
-      'foods/log/caloriesIn',
-      'foods/log/water',
-      'sleep/startTime',
-      'sleep/timeInBed',
-      'sleep/minutesAsleep',
-      'sleep/awakeningsCount',
-      'sleep/minutesAwake',
-      'sleep/minutesToFallAsleep',
-      'sleep/minutesAfterWakeup',
-      'sleep/efficiency'
-    ]
 
     @@fitbit_methods = {
       'api-accept-invite' => {
@@ -794,6 +756,6 @@ module Fitbit
         'resources'           => ['user', '-', 'body', 'log', 'weight', 'goal'],
       },
     }
-  end
 
+  end
 end
