@@ -568,6 +568,12 @@ module Fitbit
         'request_headers'     => ['Accept-Locale', 'Accept-Language'],
         'resources'           => ['user', '-', 'activities', 'recent'],
       },
+      'api-get-recent-foods' => {
+        'auth_required'       => true,
+        'http_method'         => 'get',
+        'request_headers'     => ['Accept-Locale'],
+        'resources'           => ['user', '-', 'foods', 'log', 'recent'],
+      },
       'api-get-sleep' => {
         'auth_required'       => 'user-id',
         'http_method'         => 'get',
