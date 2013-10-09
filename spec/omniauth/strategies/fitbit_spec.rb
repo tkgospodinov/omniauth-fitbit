@@ -57,6 +57,10 @@ describe "OmniAuth::Strategies::Fitbit" do
         } 
       }
     end
+    
+    it 'returns the correct name from raw_info' do
+      subject.info[:name].should eq("JD")
+    end
 
     it 'returns the correct full name from raw_info' do
       subject.info[:full_name].should eq("John Doe")
