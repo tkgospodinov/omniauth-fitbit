@@ -43,7 +43,11 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= MultiJson.load(access_token.get('http://api.fitbit.com/1/user/-/profile.json').body)
+        if options[:use_english_measure] == 'true'
+          @raw_info ||= MultiJson.load(access_token.request('get', 'http://api.fitbit.com/1/user/-/profile.json', { 'Accept-Language' => 'en_US' }).body)
+        else
+          @raw_info ||= MultiJson.load(access_token.get('http://api.fitbit.com/1/user/-/profile.json').body)
+        end
       end
     end
   end
