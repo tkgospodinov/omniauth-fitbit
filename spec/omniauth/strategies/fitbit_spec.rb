@@ -7,7 +7,7 @@ describe "OmniAuth::Strategies::Fitbit" do
 
   context 'client options' do
     it 'has correct OAuth endpoint' do
-      subject.options.client_options.site.should eq('http://api.fitbit.com')
+      subject.options.client_options.site.should eq('https://api.fitbit.com')
     end
 
     it 'has correct request token url' do
@@ -37,27 +37,27 @@ describe "OmniAuth::Strategies::Fitbit" do
 
   context 'info' do
     before :each do
-      subject.stub(:raw_info) { 
-        { 
-          "user" => 
-          { 
-            "fullName"    => "John Doe", 
-            "displayName" => "JD", 
-            "nickname"    => "Johnnie", 
-            "gender"      => "MALE", 
+      subject.stub(:raw_info) {
+        {
+          "user" =>
+          {
+            "fullName"    => "John Doe",
+            "displayName" => "JD",
+            "nickname"    => "Johnnie",
+            "gender"      => "MALE",
             "aboutMe"     => "I live in Kansas City, MO",
             "city"        => "Kansas City",
             "state"       => "MO",
             "country"     => "US",
-            "dateOfBirth" => "1980-01-01", 
+            "dateOfBirth" => "1980-01-01",
             "memberSince" => "2010-01-01",
             "locale"      => "en_US",
             "timezone"    => "America/Chicago"
-          } 
-        } 
+          }
+        }
       }
     end
-    
+
     it 'returns the correct name from raw_info' do
       subject.info[:name].should eq("JD")
     end
