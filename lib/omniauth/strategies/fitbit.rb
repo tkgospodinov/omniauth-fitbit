@@ -9,6 +9,7 @@ module OmniAuth
 
       option :client_options, {
           :site               => 'https://api.fitbit.com',
+          :authorize_url      => 'https://www.fitbit.com/oauth/authorize',
           :request_token_path => '/oauth/request_token',
           :access_token_path  => '/oauth/access_token',
           :authorize_path     => '/oauth/authorize'
