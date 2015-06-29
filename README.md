@@ -1,5 +1,7 @@
 # OmniAuth Fitbit Strategy
 
+[![Build Status](https://travis-ci.org/iamjarvo/omniauth-fitbit.svg?branch=travis-and-old-ruby-syntax)](https://travis-ci.org/iamjarvo/omniauth-fitbit)
+
 This gem is an OmniAuth 1.0+ Strategy for the [Fitbit API](https://wiki.fitbit.com/display/API/OAuth+Authentication+in+the+Fitbit+API).
 
 ## Usage
