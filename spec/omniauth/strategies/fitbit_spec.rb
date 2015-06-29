@@ -5,6 +5,12 @@ describe "OmniAuth::Strategies::Fitbit" do
     OmniAuth::Strategies::Fitbit.new(nil, @options || {})
   end
 
+  describe 'authorize_params' do
+    it 'includes :display' do
+      subject.options["authorize_params"].should include(:display)
+    end
+  end
+
   context 'client options' do
     it 'has correct OAuth endpoint' do
       subject.options.client_options.site.should eq('https://api.fitbit.com')
