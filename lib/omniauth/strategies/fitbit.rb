@@ -15,7 +15,7 @@ module OmniAuth
           :authorize_path     => '/oauth/authorize'
       }
 
-      option :authorize_params, %i(display)
+      option :authorize_params, [:display]
 
       uid do
         access_token.params['encoded_user_id']
