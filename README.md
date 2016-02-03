@@ -1,4 +1,4 @@
-# OmniAuth Fitbit Strategy
+# OmniAuth Fitbit Strategy [![Build Status](https://travis-ci.org/tkgospodinov/omniauth-fitbit.svg?branch=master)](https://travis-ci.org/tkgospodinov/omniauth-fitbit.svg?branch=master)
 
 This gem is an OmniAuth 1.0+ Strategy for the [Fitbit API](https://wiki.fitbit.com/display/API/OAuth+Authentication+in+the+Fitbit+API).
 
