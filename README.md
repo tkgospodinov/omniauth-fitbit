@@ -2,6 +2,9 @@
 
 This gem is an OmniAuth 1.0+ Strategy for the [Fitbit API](https://wiki.fitbit.com/display/API/OAuth+Authentication+in+the+Fitbit+API).
 
+## Latest
+Version 2.0.0 was released to rubygems with support for OAuth 2. The new version requires Ruby 2+.
+
 ## Usage
 
 Add the strategy to your `Gemfile`:
@@ -35,4 +38,4 @@ For a short tutorial on how to use OmniAuth in your Rails application, visit [th
 
 ## Copyright
 
-Copyright (c) 2012 TK Gospodinov. See [LICENSE](https://github.com/tkgospodinov/omniauth-fitbit/blob/master/LICENSE.md) for details.
+Copyright (c) 2016 TK Gospodinov. See [LICENSE](https://github.com/tkgospodinov/omniauth-fitbit/blob/master/LICENSE.md) for details.

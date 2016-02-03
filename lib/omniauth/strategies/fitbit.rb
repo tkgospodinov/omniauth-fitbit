@@ -1,24 +1,37 @@
-require 'omniauth'
-require 'omniauth/strategies/oauth'
+require 'omniauth-oauth2'
 
 module OmniAuth
   module Strategies
-    class Fitbit < OmniAuth::Strategies::OAuth
+    class Fitbit < OmniAuth::Strategies::OAuth2
 
       option :name, "fitbit"
 
       option :client_options, {
-          :site               => 'https://api.fitbit.com',
-          :authorize_url      => 'https://www.fitbit.com/oauth/authorize',
-          :request_token_path => '/oauth/request_token',
-          :access_token_path  => '/oauth/access_token',
-          :authorize_path     => '/oauth/authorize'
+          :site          => 'https://api.fitbit.com',
+          :authorize_url => 'https://www.fitbit.com/oauth2/authorize',
+          :token_url     => 'https://api.fitbit.com/oauth2/token'
       }
 
-      option :authorize_params, %i(display)
+      option :response_type, 'code'
+      option :authorize_options, %i(scope response_type redirect_uri)
+
+      def build_access_token
+        options.token_params.merge!(:headers => {'Authorization' => basic_auth_header })
+        super
+      end
+
+      def basic_auth_header
+        "Basic " + Base64.strict_encode64("#{options[:client_id]}:#{options[:client_secret]}")
+      end
+
+      def query_string
+        # Using state and code params in the callback_url causes a mismatch with
+        # the value set in the fitbit application configuration, so we're skipping them
+        ''
+      end
 
       uid do
-        access_token.params['encoded_user_id']
+        access_token.params['user_id']
       end
 
       info do

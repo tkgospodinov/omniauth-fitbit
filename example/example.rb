@@ -3,7 +3,7 @@ require 'omniauth-fitbit'
 
 use Rack::Session::Cookie
 use OmniAuth::Builder do
-  provider :fitbit, '<consumer_key>', '<consumer_secret>'
+  provider :fitbit, '', '', { :scope => 'profile', :redirect_uri => 'http://localhost:4567/auth/fitbit/callback' }
 end
 
 get '/' do
