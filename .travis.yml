@@ -1,0 +1,6 @@
+language: ruby
+rvm:
+ - "2.1.1"
+ - rbx
+# run tests
+script: bundle exec rspec spec
