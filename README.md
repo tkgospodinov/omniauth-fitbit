@@ -29,6 +29,15 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 end
 ```
 
+With OAuth 2.0, the additional URI parameter  of 'scope' (a space-delimited list of the permissions you are requesting) is required, and should be included in the strategy as well.
+
+
+```ruby
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :fitbit, 'consumer_key', 'consumer_secret', scope: "activity profile"
+end
+```
+
 To register your application with Fitbit and obtain a consumer key and secret, go to the [Fitbit application registration](https://dev.fitbit.com/apps/new).
 
 For additional information about OmniAuth, visit [OmniAuth wiki](https://github.com/intridea/omniauth/wiki).
