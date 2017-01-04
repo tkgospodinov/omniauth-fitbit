@@ -5,3 +5,7 @@ pkg/*
 .idea/*
 *.iml
 .DS_Store
+.rspec
+*.swp
+*.swo
+*~
