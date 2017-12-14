@@ -16,6 +16,10 @@ describe "OmniAuth::Strategies::Fitbit" do
       expect(subject.options["authorize_options"]).to include(:scope)
     end
 
+    it 'includes :prompt' do
+      expect(subject.options["authorize_options"]).to include(:prompt)
+    end
+
     it 'includes :response_type' do
       expect(subject.options["authorize_options"]).to include(:response_type)
     end
