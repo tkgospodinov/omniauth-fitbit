@@ -29,12 +29,12 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 end
 ```
 
-With OAuth 2.0, the additional URI parameter  of 'scope' (a space-delimited list of the permissions you are requesting) is required, and should be included in the strategy as well.
+With OAuth 2.0, the additional URI parameter  of 'scope' (a space-delimited list of the permissions you are requesting) is required, and should be included in the strategy as well. The URI paramater of 'prompt' is also allowed. Specify if you need to force the Fitbit authentication or the OAuth 2.0 authorization page to be displayed. When used, the redirect_uri parameter must be specified.
 
 
 ```ruby
 Rails.application.config.middleware.use OmniAuth::Builder do
-  provider :fitbit, 'consumer_key', 'consumer_secret', scope: "activity profile"
+  provider :fitbit, 'consumer_key', 'consumer_secret', scope: "activity profile", prompt: "login consent"
 end
 ```
 

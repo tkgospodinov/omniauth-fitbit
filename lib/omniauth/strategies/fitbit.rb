@@ -13,7 +13,7 @@ module OmniAuth
       }
 
       option :response_type, 'code'
-      option :authorize_options, %i(scope response_type redirect_uri)
+      option :authorize_options, %i(scope response_type redirect_uri prompt)
 
       def build_access_token
         options.token_params.merge!(:headers => {'Authorization' => basic_auth_header })
