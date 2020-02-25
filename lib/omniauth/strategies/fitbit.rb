@@ -24,6 +24,11 @@ module OmniAuth
         "Basic " + Base64.strict_encode64("#{options[:client_id]}:#{options[:client_secret]}")
       end
 
+      # Enable ability to specify callback_url in options
+      def callback_url
+        options[:callback_url] || (full_host + script_name + callback_path)
+      end
+
       def query_string
         # Using state and code params in the callback_url causes a mismatch with
         # the value set in the fitbit application configuration, so we're skipping them
