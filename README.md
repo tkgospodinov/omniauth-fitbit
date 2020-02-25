@@ -1,10 +1,10 @@
 # OmniAuth Fitbit Strategy [![Build Status](https://semaphoreci.com/api/v1/fsc/omniauth-fitbit/branches/master/badge.svg)](https://semaphoreci.com/fsc/omniauth-fitbit)
 
-As per the creators:
+**As per the creators:**
 - This gem is an OmniAuth 1.0+ Strategy for the [Fitbit API]    (https://wiki.fitbit.com/display/API/OAuth+Authentication+in+the+Fitbit+API).
 - Version 2.0.0 was released to rubygems with support for OAuth 2. The new version requires Ruby 2+.
 
-This was forked and updated because:
+**This was forked and updated because:**
 - There seemed to be little activity or response from the original.
 - The original needed maintenance and updates for some feature functionality.
 - The original could do with some general code and documentation upgrades.
