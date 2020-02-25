@@ -1,6 +1,8 @@
-source :rubygems
+# frozen_string_literal: true
 
-gem 'sinatra'
+source 'https://rubygems.org'
+
 gem 'multi_json'
 gem 'multi_xml'
-gem 'omniauth-fitbit', :path => '../'
+gem 'omniauth-fitbit', path: '../'
+gem 'sinatra'
