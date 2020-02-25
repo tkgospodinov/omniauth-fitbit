@@ -18,4 +18,6 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'omniauth-oauth2', '~> 1.4'
   s.add_runtime_dependency 'multi_xml'
+
+  s.add_development_dependency 'rake'
 end
